@@ -1,0 +1,24 @@
+{
+  "brand": "Sudhakar Pipes",
+  "is_premium": true,
+  "rates": [
+    {
+      "type": "10 KG",
+      "min_feet": 0,
+      "max_feet": 200,
+      "price_per_meter": 60
+    },
+    {
+      "type": "12.5 KG",
+      "min_feet": 200,
+      "max_feet": 450,
+      "price_per_meter": 70
+    },
+    {
+      "type": "16 KG",
+      "min_feet": 450,
+      "max_feet": 2000,
+      "price_per_meter": 95
+    }
+  ]
+}

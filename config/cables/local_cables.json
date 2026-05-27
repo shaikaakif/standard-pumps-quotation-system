@@ -1,0 +1,23 @@
+{
+  "brand": "Local / Normal",
+  "rates": [
+    {
+      "spec": "1.5 SQMM",
+      "min_feet": 0,
+      "max_feet": 150,
+      "price_per_meter": 60
+    },
+    {
+      "spec": "2.5 SQMM",
+      "min_feet": 150,
+      "max_feet": 350,
+      "price_per_meter": 90
+    },
+    {
+      "spec": "4 SQMM",
+      "min_feet": 350,
+      "max_feet": 500,
+      "price_per_meter": 125
+    }
+  ]
+}

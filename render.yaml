@@ -1,29 +1,27 @@
-# Standard Pumps Quotation System - Render Configuration
-# This file defines the infrastructure as code for Render deployment.
-
 services:
   - type: web
     name: spqs-backend
-    env: docker
-    dockerfilePath: ./backend/Dockerfile
-    region: singapore # Adjust if necessary
-    plan: starter # Starter plan minimum for persistent disks
+    env: python
+    region: singapore
+    plan: free
     healthCheckPath: /api/v1/health
-    
-    # Environment Variables
+
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
     envVars:
       - key: ENVIRONMENT
         value: production
+
       - key: FRONTEND_URL
-        sync: false # Set securely in Render dashboard
+        sync: false
+
       - key: ALLOWED_HOSTS
-        sync: false # Set securely in Render dashboard
+        sync: false
+
       - key: DATABASE_URL
         value: sqlite:////data/standard_pumps.db
 
-    # Persistent Disk Attachment
-    # CRITICAL: This guarantees SQLite persistence across deploys and restarts.
     disk:
       name: spqs-data
       mountPath: /data
-      sizeGB: 1

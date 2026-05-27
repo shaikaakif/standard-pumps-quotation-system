@@ -22,13 +22,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy python dependencies
-COPY backend/requirements.txt ./backend/
+COPY requirements.txt .
 
 # Install python dependencies
-RUN pip install --no-cache-dir -r backend/requirements.txt
-
+RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend source code into the container
-COPY backend/ ./backend/
+COPY . .
 
 # Create a data directory for SQLite persistence (overridden by Render disk)
 RUN mkdir -p /data

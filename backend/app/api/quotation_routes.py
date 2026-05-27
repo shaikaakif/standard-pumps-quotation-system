@@ -8,16 +8,16 @@ from weasyprint import HTML
 from sqlalchemy.orm import Session
 from .app.database.db import get_db
 
-from .app.schemas.quotation import (
+from app.schemas.quotation import (
     QuotationRequest,
     QuotationResponse,
     SummaryMetadata,
 )
-from .app.schemas.pdf import PDFGenerateRequest
-from .app.services.calculation_service import CalculationService
-from .app.services.recommender import RecommendationService
-from .app.services.pdf_service import PDFService
-from .app.core.config_loader import settings
+from app.schemas.pdf import PDFGenerateRequest
+from app.services.calculation_service import CalculationService
+from app.services.recommender import RecommendationService
+from app.services.pdf_service import PDFService
+from app.core.config_loader import settings
 
 router = APIRouter(prefix="/quotation", tags=["Quotation Generation Engine"])
 

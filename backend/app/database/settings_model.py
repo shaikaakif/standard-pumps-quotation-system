@@ -1,6 +1,6 @@
 import datetime
 from sqlalchemy import Column, Integer, JSON, DateTime
-from .app.database.db import Base
+from app.database.db import Base
 
 class ShopSettings(Base):
     """

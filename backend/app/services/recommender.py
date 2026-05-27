@@ -1,7 +1,7 @@
 from typing import List, Optional
-from .app.core.config_loader import settings
-from .app.schemas.enums import MaterialMode
-from .app.schemas.quotation import MotorRecommendation
+from app.core.config_loader import settings
+from app.schemas.enums import MaterialMode
+from app.schemas.quotation import MotorRecommendation
 
 
 class RecommendationService:

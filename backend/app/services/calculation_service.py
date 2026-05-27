@@ -1,6 +1,6 @@
-from .app.core.config_loader import settings
-from .app.schemas.enums import MaterialMode, StarterType
-from .app.schemas.quotation import (
+from app.core.config_loader import settings
+from app.schemas.enums import MaterialMode, StarterType
+from app.schemas.quotation import (
     PipeDetail,
     CableDetail,
     BrandDetail,

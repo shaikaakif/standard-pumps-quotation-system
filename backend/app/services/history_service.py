@@ -2,7 +2,7 @@ import datetime
 import re
 from typing import List, Tuple, Optional
 from sqlalchemy.orm import Session
-from .app.database.models import Customer, Quotation
+from app.database.models import Customer, Quotation
 
 
 class HistoryService:

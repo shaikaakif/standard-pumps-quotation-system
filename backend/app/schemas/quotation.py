@@ -2,7 +2,7 @@ import re
 from uuid import UUID
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Any
-from backend.app.schemas.enums import MaterialMode, StarterType, ElectricalPhase
+from .app.schemas.enums import MaterialMode, StarterType, ElectricalPhase
 
 
 class QuotationRequest(BaseModel):

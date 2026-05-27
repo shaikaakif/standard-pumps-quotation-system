@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from backend.app.database.db import get_db
-from backend.app.services.history_service import HistoryService
+from .app.database.db import get_db
+from .app.services.history_service import HistoryService
 
 router = APIRouter(prefix="/history", tags=["Estimate History Engine"])
 

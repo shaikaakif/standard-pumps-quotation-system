@@ -5,10 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from dotenv import load_dotenv
 
-from backend.app.api.quotation_routes import router as quotation_router
-from backend.app.api.history_routes import router as history_router
-from backend.app.api.settings_routes import settings_router
-from backend.app.database.db import engine, Base
+from .app.api.quotation_routes import router as quotation_router
+from .app.api.history_routes import router as history_router
+from .app.api.settings_routes import settings_router
+from .app.database.db import engine, Base
 
 # Load environment variables
 load_dotenv()

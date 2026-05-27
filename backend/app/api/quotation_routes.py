@@ -6,18 +6,18 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.responses import StreamingResponse
 from weasyprint import HTML
 from sqlalchemy.orm import Session
-from backend.app.database.db import get_db
+from .app.database.db import get_db
 
-from backend.app.schemas.quotation import (
+from .app.schemas.quotation import (
     QuotationRequest,
     QuotationResponse,
     SummaryMetadata,
 )
-from backend.app.schemas.pdf import PDFGenerateRequest
-from backend.app.services.calculation_service import CalculationService
-from backend.app.services.recommender import RecommendationService
-from backend.app.services.pdf_service import PDFService
-from backend.app.core.config_loader import settings
+from .app.schemas.pdf import PDFGenerateRequest
+from .app.services.calculation_service import CalculationService
+from .app.services.recommender import RecommendationService
+from .app.services.pdf_service import PDFService
+from .app.core.config_loader import settings
 
 router = APIRouter(prefix="/quotation", tags=["Quotation Generation Engine"])
 

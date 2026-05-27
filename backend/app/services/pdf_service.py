@@ -1,7 +1,7 @@
 import os
 import io
 from weasyprint import HTML
-from backend.app.schemas.pdf import PDFGenerateRequest
+from .app.schemas.pdf import PDFGenerateRequest
 
 class PDFService:
     """

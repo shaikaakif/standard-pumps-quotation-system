@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Body
 from sqlalchemy.orm import Session
 
-from backend.app.database.db import get_db
-from backend.app.database.settings_model import ShopSettings
+from .app.database.db import get_db
+from .app.database.settings_model import ShopSettings
 
 settings_router = APIRouter()
 

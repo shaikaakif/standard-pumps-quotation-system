@@ -1,0 +1,5 @@
+{
+  "default_discount_percentage": 2.5,
+  "max_allowable_discount_percentage": 3.0,
+  "description": "Quotation default and maximum bounds for shopkeeper flex discount."
+}

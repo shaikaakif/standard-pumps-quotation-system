@@ -1,0 +1,50 @@
+{
+  "app_title": "Standard Pumps & Borewell",
+  "app_subtitle": "Quotation Automation System",
+  "form": {
+    "customer_name_label": "Customer Name",
+    "customer_name_placeholder": "Enter customer full name",
+    "phone_label": "Phone Number",
+    "phone_placeholder": "Enter 10-digit mobile number",
+    "feet_label": "Bore Depth (Feet)",
+    "feet_placeholder": "e.g. 500 FT",
+    "phase_label": "Electrical Phase Compatibility",
+    "starter_type_label": "Starter Cut-off Selection",
+    "preferred_brand_label": "Preferred Motor Brand",
+    "mode_label": "Quotation Material Mode"
+  },
+  "modes": {
+    "STANDARD_label": "STANDARD (Premium)",
+    "STANDARD_desc": "Strictly branded materials (Sudhakar pipes/cables) & premium motors",
+    "REGULAR_label": "REGULAR (Budget)",
+    "REGULAR_desc": "Economical retail selection using dynamic local cable thresholds"
+  },
+  "preview": {
+    "title": "Quotation Preview Estimate",
+    "table_header_item": "Description",
+    "table_header_spec": "Specification",
+    "table_header_qty": "Quantity",
+    "table_header_rate": "Rate (₹)",
+    "table_header_amount": "Total (₹)"
+  },
+  "categories": {
+    "pipe": "Sudhakar PVC Pipes",
+    "cable": "Submersible Cable Wire",
+    "motor": "Submersible Motor Pump Set",
+    "starter": "Control Panel / Starter",
+    "fitting": "Fitting & Commissioning Charges",
+    "accessories": "Fitting Clamps & Accessories"
+  },
+  "recommender": {
+    "reasoning_header": "Recommendation Rationale",
+    "premium_badge": "Premium Grade",
+    "budget_badge": "Affordable Series"
+  },
+  "important_notes": [
+    "Motor warranty is subject to manufacturer terms and conditions.",
+    "Calculations are based on dynamic price parameters and standard depth thresholds.",
+    "Installation charges include standard manual or machine lifting labor.",
+    "Accessories include high-strength bore caps, clamps, and connections."
+  ],
+  "share_message": "Your Standard Pumps & Borewell quotation estimate is ready! View your professional quotation for {feet} FT bore depth: {amount}"
+}

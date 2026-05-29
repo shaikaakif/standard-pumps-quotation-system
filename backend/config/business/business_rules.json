@@ -1,0 +1,21 @@
+{
+  "feet_to_meter_ratio": 3.28,
+  "cable_extra_meters": 10,
+  "default_discount_percentage": 2.5,
+  "modes": {
+    "STANDARD": {
+      "pipe_brand_preference": "Sudhakar Pipes",
+      "cable_brand_preference": "Sudhakar Company",
+      "motor_segment_preference": "premium",
+      "label": "Standard (Premium Brand)",
+      "description": "Premium brand configuration strictly using Sudhakar pipes/cables and Crompton/Aqua Texmo motors."
+    },
+    "REGULAR": {
+      "pipe_brand_preference": "Sudhakar Pipes",
+      "cable_brand_preference": "dynamic",
+      "motor_segment_preference": "budget",
+      "label": "Regular (Budget Friendly)",
+      "description": "Standard retail configuration utilizing dynamic cable thresholds and budget motor options."
+    }
+  }
+}

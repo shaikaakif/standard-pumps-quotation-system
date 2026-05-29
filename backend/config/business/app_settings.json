@@ -1,0 +1,8 @@
+{
+  "system_version": "1.0.0",
+  "environment": "development",
+  "pdf_generation": {
+    "engine": "weasyprint",
+    "theme": "professional_navy"
+  }
+}

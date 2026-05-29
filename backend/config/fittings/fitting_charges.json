@@ -1,0 +1,25 @@
+{
+  "ranges": [
+    {
+      "min_feet": 0,
+      "max_feet": 500,
+      "charge": 1500,
+      "method": "manual",
+      "label": "Manual Fitting Charge"
+    },
+    {
+      "min_feet": 500,
+      "max_feet": 700,
+      "charge": 2000,
+      "method": "manual",
+      "label": "Deep Manual Fitting Charge"
+    },
+    {
+      "min_feet": 700,
+      "max_feet": 5000,
+      "charge": 3000,
+      "method": "lifting_machine",
+      "label": "Lifting Machine Fitting Charge"
+    }
+  ]
+}

@@ -23,7 +23,7 @@ class ConfigLoader:
         # backend/app/core/config_loader.py -> app/core -> app -> backend -> root
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.config_dir = os.path.abspath(
-            os.path.join(current_dir, "..", "..", "..", "config")
+            os.path.join(current_dir, "..", "..", "config")
         )
         self.load_all_configs()
 

@@ -1,5 +1,5 @@
 # Use official lightweight Python image
-FROM python:3.11.9-slim
+FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
@@ -36,4 +36,4 @@ RUN mkdir -p /data
 EXPOSE 8000
 
 # Start Uvicorn safely binding to 0.0.0.0
-CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]

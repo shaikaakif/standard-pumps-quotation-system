@@ -44,7 +44,7 @@ allowed_hosts = [h.strip() for h in allowed_hosts_raw.split(",")]
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
 
 # Security Hardening: Strict CORS Configuration
-frontend_url_raw = os.getenv("FRONTEND_URL", "http://localhost:5173")
+frontend_url_raw = os.getenv("FRONTEND_URL", "https://standard-pumps.vercel.app")
 origins = [url.strip() for url in frontend_url_raw.split(",") if url.strip()]
 
 app.add_middleware(

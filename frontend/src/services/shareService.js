@@ -7,8 +7,15 @@ import toast from "react-hot-toast";
  */
 export const shareService = {
   /**
+   * Builds the premium pre-filled WhatsApp text when a PDF is attached.
+   */
+  formatAttachmentText() {
+    return `Assalamu Alaikum.\n\nPlease find your quotation from Standard Pumps & Borewell attached.\n\nFor any assistance please contact us.\n\nStandard Pumps & Borewell\n📞 9110704747`;
+  },
+
+  /**
    * Builds a professional, structured plain-text quotation summary
-   * perfect for business communication over chat apps.
+   * perfect for business communication over chat apps when NO PDF is available.
    */
   formatShareText(quotation) {
     if (!quotation) return "";
@@ -58,13 +65,16 @@ _Thank you for your business!_
 
   /**
    * Shares the estimate dynamically.
-   * - On Mobile: Attempts navigator.share()
+   * - On Mobile: Attempts navigator.share() with File attachment
    * - On Desktop: Deep-links to WhatsApp Web
    * - Fallback: Copies text to clipboard
    */
-  async shareQuotation(quotation, { mode = "all" } = {}) {
-    const text = this.formatShareText(quotation);
-    if (!text) {
+  async shareQuotation(quotation, { mode = "all", pdfFile = null } = {}) {
+    const fallbackText = this.formatShareText(quotation);
+    const attachmentText = this.formatAttachmentText();
+    const textToShare = pdfFile ? attachmentText : fallbackText;
+
+    if (!textToShare) {
       toast.error("Invalid quotation context for sharing.");
       return;
     }
@@ -73,45 +83,55 @@ _Thank you for your business!_
       navigator.userAgent
     );
 
-    // 1. Mobile Sharing Strategy
+    // 1. Mobile Native Web Share API (with or without File)
     if (isMobile && mode === "all" && navigator.share) {
       try {
-        await navigator.share({
+        const shareData = {
           title: "Standard Pumps Quotation",
-          text: text,
-        });
+          text: textToShare,
+        };
+
+        if (pdfFile && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+          shareData.files = [pdfFile];
+        }
+
+        await navigator.share(shareData);
         toast.success("Quotation shared successfully!");
         return;
       } catch (err) {
-        // Ignore user-cancelled abort errors
         if (err.name !== "AbortError") {
           console.warn("Native Web Share failed, falling back to WhatsApp:", err);
         } else {
-          return; // User cancelled
+          return; // User cancelled the share sheet
         }
       }
     }
 
     // 2. WhatsApp Direct Sharing (Explicit click or Mobile native fallback)
     if (mode === "whatsapp" || isMobile) {
-      const encodedText = encodeURIComponent(text);
-      // Mobile WhatsApp App link vs Desktop WhatsApp Web link
+      const encodedText = encodeURIComponent(textToShare);
+      
+      // Note: WhatsApp Web/Direct link does not support passing files via URL scheme natively.
+      // It only pre-fills the text. The user will have to manually attach the downloaded PDF.
+      if (pdfFile && !isMobile) {
+         toast("Please manually attach the downloaded PDF in WhatsApp.", { icon: "📎" });
+      }
+
       const whatsappUrl = isMobile
         ? `whatsapp://send?text=${encodedText}`
         : `https://web.whatsapp.com/send?text=${encodedText}`;
 
       try {
         window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-        toast.success("Opening WhatsApp...");
       } catch (err) {
         console.error("Could not launch WhatsApp:", err);
-        this.copyToClipboard(text);
+        this.copyToClipboard(textToShare);
       }
       return;
     }
 
     // 3. Fallback: Copy to Clipboard
-    this.copyToClipboard(text);
+    this.copyToClipboard(textToShare);
   },
 
   /**

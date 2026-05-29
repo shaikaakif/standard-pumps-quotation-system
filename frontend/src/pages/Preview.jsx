@@ -32,11 +32,16 @@ function Preview() {
   useEffect(() => {
     if (isNewQuotation && quotationResponse) {
       confetti({
-        particleCount: 100,
-        spread: 80,
-        origin: { y: 0.65 },
+        particleCount: 150,
+        spread: 100,
+        origin: { y: 0.6 },
         colors: ["#102a43", "#1e3a8a", "#fbbf24", "#25d366"], // Navy, Royal Blue, Amber, WhatsApp Green
       });
+      toast.success("🎉 Quotation Generated Successfully!", { duration: 4000 });
+      // Trigger a subtle vibration if supported
+      if (navigator.vibrate) {
+        navigator.vibrate(200);
+      }
       setIsNewQuotation(false);
     }
   }, [isNewQuotation, quotationResponse, setIsNewQuotation]);
@@ -50,7 +55,7 @@ function Preview() {
     if (!quotationResponse) return;
     const container = document.querySelector(".quotation-container");
 
-    await pdfService.generatePdf(
+    await pdfService.generateClientPdf(
       container,
       quotationResponse.customer_name,
       quotationResponse.feet,
@@ -75,14 +80,37 @@ function Preview() {
     );
   };
 
+  const generateAttachmentFile = async () => {
+    try {
+      const container = document.querySelector(".quotation-container");
+      if (!container) return null;
+      
+      const { blob, filename } = await pdfService.generatePdfBlob(
+        container,
+        quotationResponse.customer_name,
+        quotationResponse.feet
+      );
+      return new File([blob], filename, { type: "application/pdf" });
+    } catch (e) {
+      console.warn("Could not generate PDF attachment for sharing:", e);
+      return null;
+    }
+  };
+
   const handleShareWhatsapp = async () => {
     if (!quotationResponse) return;
-    await shareService.shareQuotation(quotationResponse, { mode: "whatsapp" });
+    toast.loading("Preparing PDF attachment...", { id: "share-loader" });
+    const pdfFile = await generateAttachmentFile();
+    toast.dismiss("share-loader");
+    await shareService.shareQuotation(quotationResponse, { mode: "whatsapp", pdfFile });
   };
 
   const handleShare = async () => {
     if (!quotationResponse) return;
-    await shareService.shareQuotation(quotationResponse, { mode: "all" });
+    toast.loading("Preparing PDF attachment...", { id: "share-loader" });
+    const pdfFile = await generateAttachmentFile();
+    toast.dismiss("share-loader");
+    await shareService.shareQuotation(quotationResponse, { mode: "all", pdfFile });
   };
 
   // 1. Graceful empty-state handling if loaded without context

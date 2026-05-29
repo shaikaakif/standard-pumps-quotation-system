@@ -1,4 +1,5 @@
 import apiClient from "./api";
+import html2pdf from "html2pdf.js";
 
 /**
  * Service to handle high-fidelity, print-safe client-side DOM cloning,
@@ -7,7 +8,82 @@ import apiClient from "./api";
  */
 export const pdfService = {
   /**
-   * Sanitizes and serializes the quotation preview container,
+   * Generates a high-quality PDF on the client-side using html2pdf.js.
+   * This operates 100% offline and avoids backend memory constraints.
+   * 
+   * @param {HTMLElement} container - The live DOM node of the quotation container.
+   * @param {string} customerName - The customer's name for file naming.
+   * @param {number|string} depth - The bore depth in feet.
+   * @param {object} options - Options containing state callbacks.
+   */
+  async generateClientPdf(container, customerName, depth, { onStart, onComplete, onError } = {}) {
+    if (!container) {
+      if (onError) onError(new Error("Quotation container DOM node not found."));
+      return;
+    }
+
+    try {
+      if (onStart) onStart();
+
+      const sanitizedName = customerName.replace(/[^a-zA-Z0-9]/g, "_");
+      const filename = `Quotation_${sanitizedName}_${depth}FT.pdf`;
+
+      // Define html2pdf options for high quality rendering
+      const opt = {
+        margin:       [10, 10, 10, 10], // Margin in mm
+        filename:     filename,
+        image:        { type: 'jpeg', quality: 1.0 }, // Maximum quality
+        html2canvas:  { 
+          scale: 2, // Scale 2 prevents blurry text
+          useCORS: true, 
+          letterRendering: true 
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      // We clone the node strictly for visual safety so we can remove UI buttons
+      const clonedNode = container.cloneNode(true);
+      const elementsToPrune = clonedNode.querySelectorAll(".no-print, .no-pdf, button");
+      elementsToPrune.forEach((el) => el.remove());
+
+      // Trigger client-side generation
+      await html2pdf().set(opt).from(clonedNode).save();
+
+      if (onComplete) onComplete();
+    } catch (err) {
+      console.error("Client-side PDF generation failed, falling back to backend:", err);
+      // Fallback to backend generation
+      await this.generatePdf(container, customerName, depth, { onStart, onComplete, onError });
+    }
+  },
+
+  /**
+   * Generates a PDF Blob entirely offline for Web Share API native sharing.
+   */
+  async generatePdfBlob(container, customerName, depth) {
+    if (!container) throw new Error("Container not found");
+
+    const sanitizedName = customerName.replace(/[^a-zA-Z0-9]/g, "_");
+    const filename = `Quotation_${sanitizedName}_${depth}FT.pdf`;
+
+    const opt = {
+      margin:       [10, 10, 10, 10],
+      filename:     filename,
+      image:        { type: 'jpeg', quality: 1.0 },
+      html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    const clonedNode = container.cloneNode(true);
+    const elementsToPrune = clonedNode.querySelectorAll(".no-print, .no-pdf, button");
+    elementsToPrune.forEach((el) => el.remove());
+
+    const pdfOutput = await html2pdf().set(opt).from(clonedNode).output('blob');
+    return { blob: pdfOutput, filename };
+  },
+
+  /**
+   * Legacy Backend Fallback: Sanitizes and serializes the quotation preview container,
    * then posts to backend to compile a print-safe A4 PDF.
    * 
    * @param {HTMLElement} container - The live DOM node of the quotation container.

@@ -1,17 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 
 const QUOTATION_STEPS = [
-  { message: "Analyzing Bore Depth & Phase...", maxProgress: 25 },
-  { message: "Calculating Column Pipe & Cable Configurations...", maxProgress: 50 },
-  { message: "Sizing Submersible Motor & Starter Specs...", maxProgress: 75 },
-  { message: "Finalizing Estimate and Total Pricing...", maxProgress: 100 }
+  { message: "🔧 Calculating Pipe Requirements...", maxProgress: 20 },
+  { message: "⚡ Selecting Best Motor Configuration...", maxProgress: 40 },
+  { message: "📏 Measuring Cable Requirements...", maxProgress: 60 },
+  { message: "💰 Optimizing Pricing...", maxProgress: 80 },
+  { message: "📄 Preparing Quotation...", maxProgress: 100 }
 ];
 
 const PDF_STEPS = [
-  { message: "Capturing Invoice Layout...", maxProgress: 25 },
-  { message: "Compiling Custom Fonts & Colors...", maxProgress: 50 },
-  { message: "Generating PDF Document...", maxProgress: 75 },
-  { message: "Delivering Print-Ready File...", maxProgress: 100 }
+  { message: "📷 Capturing Invoice Layout...", maxProgress: 30 },
+  { message: "🎨 Compiling High-Resolution Rendering...", maxProgress: 60 },
+  { message: "📄 Generating Print-Ready PDF...", maxProgress: 90 },
+  { message: "✅ Delivering Local Document...", maxProgress: 100 }
 ];
 
 export function useLoadingSteps(type = "quotation", duration = 3000) {

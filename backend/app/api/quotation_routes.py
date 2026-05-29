@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.responses import StreamingResponse
 from weasyprint import HTML
 from sqlalchemy.orm import Session
-from .app.database.db import get_db
+from app.database.db import get_db
 
 from app.schemas.quotation import (
     QuotationRequest,

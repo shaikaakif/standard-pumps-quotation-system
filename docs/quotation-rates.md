@@ -163,7 +163,7 @@ The following brands are considered premium and highly trusted:
 
 | Motor Specification  | Recommended Bore Range | Price  |
 | -------------------- | ---------------------- | ------ |
-| 1 HP / 12 Stage V3   | Till 200 FT            | ₹12500 |
+| 1 HP / 12 Stage V3   | Till 200 FT            | ₹13500 |
 | 1.5 HP / 18 Stage V4 | Till 360 FT            | ₹16500 |
 | 2 HP / 20 Stage V4   | 360 - 450 FT           | ₹19500 |
 | 2 HP / 25 Stage V4   | 450 - 550 FT           | ₹22500 |

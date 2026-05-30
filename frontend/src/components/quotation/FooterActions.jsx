@@ -9,18 +9,18 @@ function FooterActions({ onReset, onDownloadPdf, onShareWhatsapp, onShare, isGen
   };
 
   return (
-    <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-between items-center bg-brand-gray-50 border border-brand-gray-200 rounded-lg p-4 no-print quotation-card-group shadow-sm w-full max-w-[800px] mx-auto">
-      {/* Back button */}
+    <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-between items-center bg-brand-surface border border-brand-gray-200 rounded-xl p-4 no-print quotation-card-group shadow-sm w-full max-w-[800px] mx-auto pb-24 sm:pb-4">
+      {/* Back button (Hidden on mobile inside sticky footer, we just show actions) */}
       <Link
         to="/"
-        className="flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-brand-gray-550 hover:text-brand-navy-800 transition-colors py-2 px-3 hover:bg-brand-gray-200 rounded shrink-0"
+        className="hidden sm:flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-brand-muted hover:text-brand-primary transition-colors py-2 px-3 hover:bg-brand-gray-100 rounded shrink-0"
       >
         <FiArrowLeft className="w-4 h-4" />
         <span>Back to Form</span>
       </Link>
 
-      {/* Share / PDF action buttons */}
-      <div className="flex flex-wrap gap-2.5 w-full sm:w-auto justify-center sm:justify-end">
+      {/* Sticky Bottom Action Bar on Mobile / Standard on Desktop */}
+      <div className="sm:relative fixed bottom-16 sm:bottom-auto left-0 right-0 p-4 sm:p-0 bg-brand-surface sm:bg-transparent border-t border-brand-gray-200 sm:border-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] sm:shadow-none z-40 flex flex-row gap-2.5 w-full sm:w-auto justify-between sm:justify-end">
         {/* Print button */}
         <button
           type="button"
@@ -49,9 +49,9 @@ function FooterActions({ onReset, onDownloadPdf, onShareWhatsapp, onShare, isGen
           type="button"
           onClick={onShareWhatsapp}
           disabled={isGeneratingPdf}
-          className="flex items-center justify-center space-x-1.5 bg-brand-green text-white text-xs font-bold uppercase tracking-wider py-2 px-4 rounded hover:bg-brand-green-hover transition-all shadow-sm shrink-0 disabled:opacity-50"
+          className="flex-1 sm:flex-none flex items-center justify-center space-x-1.5 bg-brand-green text-white text-xs font-bold uppercase tracking-wider py-3 sm:py-2 px-4 rounded-lg sm:rounded hover:bg-brand-green-hover transition-all shadow-sm shrink-0 disabled:opacity-50"
         >
-          <FaWhatsapp className="w-4 h-4 text-white" />
+          <FaWhatsapp className="w-4 h-4 sm:w-4 sm:h-4" />
           <span>WhatsApp</span>
         </button>
 
@@ -60,10 +60,10 @@ function FooterActions({ onReset, onDownloadPdf, onShareWhatsapp, onShare, isGen
           type="button"
           onClick={onDownloadPdf}
           disabled={isGeneratingPdf}
-          className="flex items-center justify-center space-x-1.5 bg-brand-navy-800 text-white text-xs font-bold uppercase tracking-wider py-2 px-4 rounded hover:bg-brand-navy-900 transition-all shadow-sm shrink-0 disabled:opacity-50"
+          className="flex-1 sm:flex-none flex items-center justify-center space-x-1.5 bg-brand-primary text-white text-xs font-bold uppercase tracking-wider py-3 sm:py-2 px-4 rounded-lg sm:rounded hover:bg-brand-primary/90 transition-all shadow-sm shrink-0 disabled:opacity-50"
         >
           <FiDownload className="w-4 h-4" />
-          <span>{isGeneratingPdf ? "Generating..." : "Download PDF"}</span>
+          <span>{isGeneratingPdf ? "..." : "PDF"}</span>
         </button>
 
         {/* New Quotation button */}

@@ -8,6 +8,16 @@ export default {
     extend: {
       colors: {
         brand: {
+          primary: "#1e3a8a",
+          secondary: "#2563eb",
+          accent: "#f59e0b",
+          success: "#10b981",
+          danger: "#ef4444",
+          background: "#f8fafc",
+          surface: "#ffffff",
+          text: "#0f172a",
+          muted: "#64748b",
+          // Keep existing legacy mappings for backward compatibility during transition if needed
           navy: {
             50: "#f0f4f8",
             100: "#d9e2ec",
@@ -17,15 +27,15 @@ export default {
             500: "#627d98",
             600: "#486581",
             700: "#334e68",
-            800: "#1e3a8a", // Primary Navy Blue
+            800: "#1e3a8a",
             900: "#102a43",
           },
           yellow: {
-            DEFAULT: "#fbbf24", // Premium Accent Yellow
+            DEFAULT: "#fbbf24",
             hover: "#f59e0b",
           },
           green: {
-            DEFAULT: "#25d366", // WhatsApp Green
+            DEFAULT: "#25d366",
             hover: "#128c7e",
           },
           gray: {
@@ -39,7 +49,8 @@ export default {
         }
       },
       fontFamily: {
-        sans: ["Inter", "Poppins", "sans-serif"],
+        sans: ["Inter", "sans-serif"],
+        calligraphy: ["'Alex Brush'", "cursive"],
       }
     },
   },

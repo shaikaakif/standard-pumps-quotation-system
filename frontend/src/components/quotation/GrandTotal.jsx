@@ -10,11 +10,11 @@ function GrandTotal({ totals }) {
         {/* Authorized Signature Placeholder (left side) */}
         <div className="pb-4">
           <div className="border border-dashed border-brand-gray-300 rounded-md p-5 text-center bg-brand-gray-50/30 w-full max-w-[260px] mx-auto md:mx-0">
-            <div className="h-14 flex items-center justify-center text-xs text-brand-gray-400 font-mono italic">
-              Shop Seal / Signature
+            <div className="h-14 flex items-center justify-center text-3xl text-brand-primary font-calligraphy font-semibold">
+              SHAIK ASIF
             </div>
-            <div className="border-t border-brand-gray-300 pt-2 text-[10px] font-bold text-brand-navy-800 uppercase tracking-widest">
-              {settings?.quotation?.signature_label || "Authorized Signature"}
+            <div className="border-t border-brand-gray-300 pt-2 text-[10px] font-bold text-brand-muted uppercase tracking-widest">
+              Authorized Signatory
             </div>
           </div>
         </div>

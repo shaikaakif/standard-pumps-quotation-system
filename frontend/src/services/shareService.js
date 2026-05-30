@@ -84,7 +84,7 @@ _Thank you for your business!_
     );
 
     // 1. Mobile Native Web Share API (with or without File)
-    if (isMobile && mode === "all" && navigator.share) {
+    if (isMobile && navigator.share) {
       try {
         const shareData = {
           title: "Standard Pumps Quotation",
@@ -99,11 +99,10 @@ _Thank you for your business!_
         toast.success("Quotation shared successfully!");
         return;
       } catch (err) {
-        if (err.name !== "AbortError") {
-          console.warn("Native Web Share failed, falling back to WhatsApp:", err);
-        } else {
+        if (err.name === "AbortError") {
           return; // User cancelled the share sheet
         }
+        console.warn("Native Web Share failed, falling back to WhatsApp:", err);
       }
     }
 
@@ -112,9 +111,22 @@ _Thank you for your business!_
       const encodedText = encodeURIComponent(textToShare);
       
       // Note: WhatsApp Web/Direct link does not support passing files via URL scheme natively.
-      // It only pre-fills the text. The user will have to manually attach the downloaded PDF.
-      if (pdfFile && !isMobile) {
-         toast("Please manually attach the downloaded PDF in WhatsApp.", { icon: "📎" });
+      // If we have a PDF, we trigger a forced physical download so it's in the device's "Recent Downloads".
+      if (pdfFile) {
+        try {
+          const url = URL.createObjectURL(pdfFile);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = pdfFile.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          
+          toast("PDF downloaded. Tap 📎 in WhatsApp to attach it.", { duration: 6000, icon: "📎" });
+        } catch (downloadErr) {
+          console.warn("Failed to auto-download PDF fallback:", downloadErr);
+        }
       }
 
       const whatsappUrl = isMobile

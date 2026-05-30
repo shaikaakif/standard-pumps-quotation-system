@@ -4,8 +4,10 @@ import { FiFileText, FiClock, FiSettings, FiWifi, FiWifiOff, FiServer } from "re
 import { APP_VERSION } from "../../utils/cacheHelpers";
 import { useSettings } from "../../hooks/useSettings";
 
+import useInstallPrompt from "../../hooks/useInstallPrompt";
+
 /**
- * Primary navigation bar with connectivity status indicators.
+ * Primary navigation header with connectivity status indicators.
  * Designed for mobile-first shop usage with clear visual feedback.
  *
  * @param {Object} props
@@ -14,6 +16,7 @@ import { useSettings } from "../../hooks/useSettings";
  */
 function Navbar({ isOnline = true, isBackendAvailable = true }) {
   const { logos } = useSettings();
+  const { canShowPrompt, promptInstall } = useInstallPrompt();
   
   // Determine status chip content
   const getStatusChip = () => {
@@ -49,21 +52,22 @@ function Navbar({ isOnline = true, isBackendAvailable = true }) {
     }`;
 
   return (
-    <header className="bg-brand-navy-800 text-white shadow-md sticky top-0 z-50">
-      <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between sm:h-16 py-3 sm:py-0">
+    <header className="bg-brand-primary text-white shadow-md sticky top-0 z-50">
+      <div className="max-w-4xl mx-auto px-4 flex items-center justify-between h-16">
         {/* Brand Identity */}
-        <NavLink to="/" className="flex items-center space-x-3 mb-3 sm:mb-0">
+        <NavLink to="/" className="flex items-center space-x-3">
           {logos?.appLogo ? (
             <img src={logos.appLogo} alt="App Logo" className="h-8 object-contain rounded bg-white p-1" />
           ) : (
-            <div className="bg-brand-yellow px-3 py-1.5 rounded font-bold text-brand-navy-900 tracking-wider text-sm shadow">
+            <div className="bg-brand-accent px-3 py-1.5 rounded font-bold text-brand-primary tracking-wider text-sm shadow">
               SPQS
             </div>
           )}
           <div>
-            <h1 className="text-base font-bold tracking-tight uppercase leading-none">STANDARD PUMPS</h1>
+            <h1 className="text-base font-bold tracking-tight uppercase leading-none hidden sm:block">STANDARD PUMPS</h1>
+            <h1 className="text-base font-bold tracking-tight uppercase leading-none sm:hidden">SPQS</h1>
             <div className="flex items-center space-x-2 mt-0.5">
-              <p className="text-[10px] text-brand-navy-200 uppercase tracking-widest font-semibold">
+              <p className="text-[10px] text-brand-navy-200 uppercase tracking-widest font-semibold hidden sm:block">
                 Quotation Automation
               </p>
               {/* App version */}
@@ -76,9 +80,18 @@ function Navbar({ isOnline = true, isBackendAvailable = true }) {
         <div className="flex items-center space-x-3">
           {/* Connectivity status chip */}
           {getStatusChip()}
+          
+          {canShowPrompt && (
+            <button
+              onClick={promptInstall}
+              className="hidden sm:flex items-center space-x-1 bg-brand-accent text-brand-primary px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm hover:bg-yellow-400 transition-colors"
+            >
+              📲 Install App
+            </button>
+          )}
 
-          {/* Dynamic Navigation Tabs */}
-          <nav className="flex space-x-1 w-full sm:w-auto justify-around sm:justify-end">
+          {/* Desktop Navigation (Hidden on Mobile) */}
+          <nav className="hidden sm:flex space-x-1 justify-end">
             <NavLink to="/" className={navLinkClass}>
               <FiFileText className="w-4 h-4" />
               <span>Estimator</span>

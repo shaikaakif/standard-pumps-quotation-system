@@ -136,8 +136,8 @@ function CustomerForm() {
       {/* Name and Phone Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
-          <label htmlFor="customer_name" className="block text-xs font-bold uppercase tracking-wider text-brand-navy-900 mb-1.5 flex items-center">
-            <FiUser className="mr-1 text-brand-navy-500" /> Customer Name
+          <label htmlFor="customer_name" className="block text-xs font-bold uppercase tracking-wider text-brand-muted mb-1.5 flex items-center">
+            <FiUser className="mr-1 text-brand-secondary" /> Customer Name
           </label>
           <div className="relative">
             <input
@@ -148,10 +148,10 @@ function CustomerForm() {
               value={formData.customer_name}
               onChange={handleChange}
               disabled={isLoading}
-              className={`w-full text-sm pl-3 pr-3 py-2.5 bg-white border rounded-md shadow-sm outline-none transition-all ${
+              className={`w-full text-sm pl-3 pr-3 py-3 bg-brand-surface border rounded-xl shadow-sm outline-none transition-all ${
                 validationErrors.customer_name
-                  ? "border-red-500 bg-red-50/10 focus:border-red-600"
-                  : "border-brand-gray-300 focus:border-brand-navy-800"
+                  ? "border-brand-danger bg-red-50/10 focus:border-red-600"
+                  : "border-brand-gray-300 focus:border-brand-primary"
               }`}
             />
           </div>
@@ -161,8 +161,8 @@ function CustomerForm() {
         </div>
 
         <div>
-          <label htmlFor="phone" className="block text-xs font-bold uppercase tracking-wider text-brand-navy-900 mb-1.5 flex items-center">
-            <FiPhone className="mr-1 text-brand-navy-500" /> Phone Number
+          <label htmlFor="phone" className="block text-xs font-bold uppercase tracking-wider text-brand-muted mb-1.5 flex items-center">
+            <FiPhone className="mr-1 text-brand-secondary" /> Phone Number
           </label>
           <div className="relative">
             <input
@@ -173,10 +173,10 @@ function CustomerForm() {
               value={formData.phone}
               onChange={handleChange}
               disabled={isLoading}
-              className={`w-full text-sm pl-3 pr-3 py-2.5 bg-white border rounded-md shadow-sm outline-none transition-all ${
+              className={`w-full text-sm pl-3 pr-3 py-3 bg-brand-surface border rounded-xl shadow-sm outline-none transition-all ${
                 validationErrors.phone
-                  ? "border-red-500 bg-red-50/10 focus:border-red-600"
-                  : "border-brand-gray-300 focus:border-brand-navy-800"
+                  ? "border-brand-danger bg-red-50/10 focus:border-red-600"
+                  : "border-brand-gray-300 focus:border-brand-primary"
               }`}
             />
           </div>
@@ -189,8 +189,8 @@ function CustomerForm() {
       {/* Depth Input & Brand Selector */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
-          <label htmlFor="feet" className="block text-xs font-bold uppercase tracking-wider text-brand-navy-900 mb-1.5 flex items-center">
-            <FiCompass className="mr-1 text-brand-navy-500" /> Borewell Depth (Feet)
+          <label htmlFor="feet" className="block text-xs font-bold uppercase tracking-wider text-brand-muted mb-1.5 flex items-center">
+            <FiCompass className="mr-1 text-brand-secondary" /> Borewell Depth (Feet)
           </label>
           <div className="relative">
             <input
@@ -201,10 +201,10 @@ function CustomerForm() {
               value={formData.feet}
               onChange={handleChange}
               disabled={isLoading}
-              className={`w-full text-sm pl-3 pr-3 py-2.5 bg-white border rounded-md shadow-sm outline-none transition-all ${
+              className={`w-full text-sm pl-3 pr-3 py-3 bg-brand-surface border rounded-xl shadow-sm outline-none transition-all ${
                 validationErrors.feet
-                  ? "border-red-500 bg-red-50/10 focus:border-red-600"
-                  : "border-brand-gray-300 focus:border-brand-navy-800"
+                  ? "border-brand-danger bg-red-50/10 focus:border-red-600"
+                  : "border-brand-gray-300 focus:border-brand-primary"
               }`}
             />
           </div>
@@ -214,8 +214,8 @@ function CustomerForm() {
         </div>
 
         <div>
-          <label htmlFor="preferred_brand" className="block text-xs font-bold uppercase tracking-wider text-brand-navy-900 mb-1.5 flex items-center">
-            <FiAward className="mr-1 text-brand-navy-500" /> Preferred Motor Brand
+          <label htmlFor="preferred_brand" className="block text-xs font-bold uppercase tracking-wider text-brand-muted mb-1.5 flex items-center">
+            <FiAward className="mr-1 text-brand-secondary" /> Preferred Motor Brand
           </label>
           <select
             id="preferred_brand"
@@ -223,7 +223,7 @@ function CustomerForm() {
             value={formData.preferred_brand}
             onChange={handleChange}
             disabled={isLoading}
-            className="w-full text-sm px-3 py-2.5 bg-white border border-brand-gray-300 rounded-md shadow-sm outline-none focus:border-brand-navy-800 transition-all cursor-pointer"
+            className="w-full text-sm px-3 py-3 bg-brand-surface border border-brand-gray-300 rounded-xl shadow-sm outline-none focus:border-brand-primary transition-all cursor-pointer"
           >
             <option value="">Any Premium Brand (Crompton / Aqua Texmo / CRI)</option>
             <option value="Crompton">Crompton Pumps</option>
@@ -237,9 +237,9 @@ function CustomerForm() {
       </div>
 
       {/* Segmented Mode Selector */}
-      <div className="border border-brand-gray-200 rounded-lg p-5 bg-brand-gray-50/50">
-        <label className="block text-xs font-bold uppercase tracking-wider text-brand-navy-900 mb-3 flex items-center">
-          <FiToggleRight className="mr-1 text-brand-navy-500" /> Quotation Material Mode
+      <div className="border border-brand-gray-200 rounded-2xl p-5 bg-brand-surface shadow-sm">
+        <label className="block text-xs font-bold uppercase tracking-wider text-brand-muted mb-3 flex items-center">
+            <FiToggleRight className="mr-1 text-brand-secondary" /> Quotation Material Mode
         </label>
         
         <div className="grid grid-cols-2 gap-3">
@@ -247,17 +247,17 @@ function CustomerForm() {
             type="button"
             onClick={() => handleModeChange("REGULAR")}
             disabled={isLoading}
-            className={`px-4 py-3 rounded-lg border text-left flex flex-col justify-between transition-all ${
+            className={`px-4 py-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
               formData.mode === "REGULAR"
-                ? "bg-white border-brand-navy-800 ring-2 ring-brand-navy-100 shadow-sm"
-                : "bg-white border-brand-gray-200 hover:border-brand-gray-300"
+                ? "bg-brand-surface border-brand-primary ring-2 ring-brand-primary/20 shadow-sm"
+                : "bg-brand-surface border-brand-gray-200 hover:border-brand-gray-300"
             }`}
           >
             <div className="flex items-center justify-between w-full">
-              <span className={`text-sm font-bold ${formData.mode === "REGULAR" ? "text-brand-navy-800" : "text-brand-gray-550"}`}>
+              <span className={`text-sm font-bold ${formData.mode === "REGULAR" ? "text-brand-primary" : "text-brand-muted"}`}>
                 REGULAR (Budget)
               </span>
-              {formData.mode === "REGULAR" && <div className="w-2.5 h-2.5 rounded-full bg-brand-navy-800" />}
+              {formData.mode === "REGULAR" && <div className="w-2.5 h-2.5 rounded-full bg-brand-primary" />}
             </div>
             <span className="text-[10px] text-brand-gray-550 mt-1">Economical cable cutoff boundaries enabled</span>
           </button>
@@ -266,10 +266,10 @@ function CustomerForm() {
             type="button"
             onClick={() => handleModeChange("STANDARD")}
             disabled={isLoading}
-            className={`px-4 py-3 rounded-lg border text-left flex flex-col justify-between transition-all ${
+            className={`px-4 py-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
               formData.mode === "STANDARD"
-                ? "bg-brand-navy-900 border-brand-navy-900 shadow-md text-white"
-                : "bg-white border-brand-gray-200 hover:border-brand-gray-300"
+                ? "bg-brand-primary border-brand-primary shadow-md text-white"
+                : "bg-brand-surface border-brand-gray-200 hover:border-brand-gray-300"
             }`}
           >
             <div className="flex items-center justify-between w-full">
@@ -303,19 +303,19 @@ function CustomerForm() {
       {/* Phase and Starter Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Phase Selector */}
-        <div className="border border-brand-gray-200 rounded-lg p-4 bg-white">
-          <label className="block text-xs font-bold uppercase tracking-wider text-brand-navy-900 mb-3.5 flex items-center">
-            <FiZap className="mr-1 text-brand-navy-500" /> Electrical Phase
+        <div className="border border-brand-gray-200 rounded-2xl p-4 bg-brand-surface shadow-sm">
+          <label className="block text-xs font-bold uppercase tracking-wider text-brand-muted mb-3.5 flex items-center">
+            <FiZap className="mr-1 text-brand-secondary" /> Electrical Phase
           </label>
           <div className="flex space-x-3">
             <button
               type="button"
               onClick={() => handlePhaseChange("single")}
               disabled={isLoading}
-              className={`flex-1 py-2 text-sm font-bold rounded border transition-all ${
+              className={`flex-1 py-3 text-sm font-bold rounded-xl border transition-all ${
                 formData.phase === "single"
-                  ? "bg-brand-navy-100 border-brand-navy-800 text-brand-navy-800 shadow-sm"
-                  : "bg-white border-brand-gray-200 text-brand-gray-550 hover:bg-brand-gray-50"
+                  ? "bg-brand-primary/10 border-brand-primary text-brand-primary shadow-sm"
+                  : "bg-brand-surface border-brand-gray-200 text-brand-muted hover:bg-brand-gray-50"
               }`}
             >
               Single Phase
@@ -324,10 +324,10 @@ function CustomerForm() {
               type="button"
               onClick={() => handlePhaseChange("three")}
               disabled={isLoading}
-              className={`flex-1 py-2 text-sm font-bold rounded border transition-all ${
+              className={`flex-1 py-3 text-sm font-bold rounded-xl border transition-all ${
                 formData.phase === "three"
-                  ? "bg-brand-navy-100 border-brand-navy-800 text-brand-navy-800 shadow-sm"
-                  : "bg-white border-brand-gray-200 text-brand-gray-550 hover:bg-brand-gray-50"
+                  ? "bg-brand-primary/10 border-brand-primary text-brand-primary shadow-sm"
+                  : "bg-brand-surface border-brand-gray-200 text-brand-muted hover:bg-brand-gray-50"
               }`}
             >
               Three Phase
@@ -336,9 +336,9 @@ function CustomerForm() {
         </div>
 
         {/* Starter Selector */}
-        <div className="border border-brand-gray-200 rounded-lg p-4 bg-white">
-          <label className="block text-xs font-bold uppercase tracking-wider text-brand-navy-900 mb-3.5 flex items-center">
-            <FiCpu className="mr-1 text-brand-navy-500" /> Starter cut-off selection
+        <div className="border border-brand-gray-200 rounded-2xl p-4 bg-brand-surface shadow-sm">
+          <label className="block text-xs font-bold uppercase tracking-wider text-brand-muted mb-3.5 flex items-center">
+            <FiCpu className="mr-1 text-brand-secondary" /> Starter cut-off selection
           </label>
           {formData.phase === "three" ? (
             <div className="py-2 px-3 bg-brand-gray-100 rounded text-xs text-brand-gray-550 font-semibold border border-brand-gray-200">
@@ -350,10 +350,10 @@ function CustomerForm() {
                 type="button"
                 onClick={() => setFormData((prev) => ({ ...prev, starter_type: "manual" }))}
                 disabled={isLoading}
-                className={`flex-1 py-2 text-sm font-bold rounded border transition-all ${
+                className={`flex-1 py-3 text-sm font-bold rounded-xl border transition-all ${
                   formData.starter_type === "manual"
-                    ? "bg-brand-navy-100 border-brand-navy-800 text-brand-navy-800 shadow-sm"
-                    : "bg-white border-brand-gray-200 text-brand-gray-550 hover:bg-brand-gray-50"
+                    ? "bg-brand-primary/10 border-brand-primary text-brand-primary shadow-sm"
+                    : "bg-brand-surface border-brand-gray-200 text-brand-muted hover:bg-brand-gray-50"
                 }`}
               >
                 Normal Manual
@@ -362,10 +362,10 @@ function CustomerForm() {
                 type="button"
                 onClick={() => setFormData((prev) => ({ ...prev, starter_type: "auto" }))}
                 disabled={isLoading}
-                className={`flex-1 py-2 text-sm font-bold rounded border transition-all ${
+                className={`flex-1 py-3 text-sm font-bold rounded-xl border transition-all ${
                   formData.starter_type === "auto"
-                    ? "bg-brand-navy-100 border-brand-navy-800 text-brand-navy-800 shadow-sm"
-                    : "bg-white border-brand-gray-200 text-brand-gray-550 hover:bg-brand-gray-50"
+                    ? "bg-brand-primary/10 border-brand-primary text-brand-primary shadow-sm"
+                    : "bg-brand-surface border-brand-gray-200 text-brand-muted hover:bg-brand-gray-50"
                 }`}
               >
                 Auto cut-off (Dry run)
@@ -382,26 +382,28 @@ function CustomerForm() {
         </div>
       )}
 
-      {/* Submit Button */}
-      <button
-        type="submit"
-        disabled={isLoading}
-        className={`w-full flex items-center justify-center space-x-2 bg-brand-navy-800 text-white py-3.5 rounded-lg font-bold hover:bg-brand-navy-900 transition-colors shadow shadow-brand-navy-900/10 focus:outline-none ${
-          isLoading ? "opacity-75 cursor-not-allowed bg-brand-navy-900" : ""
-        }`}
-      >
-        {isLoading ? (
-          <>
-            <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
-            <span className="uppercase tracking-wider">Processing Sizing Ratios...</span>
-          </>
-        ) : (
-          <>
-            <FiFileText className="w-5 h-5" />
-            <span className="uppercase tracking-wider">Generate Professional Estimate</span>
-          </>
-        )}
-      </button>
+      {/* Submit Button Sticky on Mobile */}
+      <div className="sm:relative fixed bottom-16 sm:bottom-auto left-0 right-0 p-4 sm:p-0 bg-brand-surface sm:bg-transparent border-t border-brand-gray-200 sm:border-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] sm:shadow-none z-40">
+        <button
+          type="submit"
+          disabled={isLoading}
+          className={`w-full flex items-center justify-center space-x-2 bg-brand-primary text-white py-4 rounded-xl font-bold hover:bg-brand-primary/90 transition-colors shadow-lg shadow-brand-primary/25 focus:outline-none ${
+            isLoading ? "opacity-75 cursor-not-allowed bg-brand-primary/80" : ""
+          }`}
+        >
+          {isLoading ? (
+            <>
+              <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+              <span className="uppercase tracking-wider">Processing Sizing Ratios...</span>
+            </>
+          ) : (
+            <>
+              <FiFileText className="w-5 h-5" />
+              <span className="uppercase tracking-wider">Generate Professional Estimate</span>
+            </>
+          )}
+        </button>
+      </div>
       
       {loader.isActive && (
         <LoadingOverlay 

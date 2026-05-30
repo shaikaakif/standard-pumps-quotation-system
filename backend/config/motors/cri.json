@@ -2,7 +2,7 @@
   "brand": "CRI Pumps",
   "is_premium": true,
   "models": [
-    { "spec": "1 HP / 12 Stage V3", "min_feet": 0, "max_feet": 200, "price": 12500, "hp": 1.0, "stage": 12, "phase_compatibility": ["single"] },
+    { "spec": "1 HP / 12 Stage V3", "min_feet": 0, "max_feet": 200, "price": 13500, "hp": 1.0, "stage": 12, "phase_compatibility": ["single"] },
     { "spec": "1.5 HP / 18 Stage V4", "min_feet": 200, "max_feet": 360, "price": 16500, "hp": 1.5, "stage": 18, "phase_compatibility": ["single", "three"] },
     { "spec": "2 HP / 20 Stage V4", "min_feet": 360, "max_feet": 450, "price": 19500, "hp": 2.0, "stage": 20, "phase_compatibility": ["single", "three"] },
     { "spec": "2 HP / 25 Stage V4", "min_feet": 450, "max_feet": 550, "price": 22500, "hp": 2.0, "stage": 25, "phase_compatibility": ["single", "three"] },

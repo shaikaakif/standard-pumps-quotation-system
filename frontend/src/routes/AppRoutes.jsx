@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Navbar from "../components/layout/Navbar";
+import BottomNav from "../components/layout/BottomNav";
 import SplashScreen from "../components/pwa/SplashScreen";
 import OfflineBanner from "../components/pwa/OfflineBanner";
 import InstallPrompt from "../components/pwa/InstallPrompt";
@@ -28,8 +29,8 @@ function AppRoutes() {
       {/* Offline connectivity banner */}
       <OfflineBanner isOnline={isOnline} isBackendAvailable={isBackendAvailable} />
 
-      {/* Main Container with lazy-loaded routes */}
-      <main className="flex-grow w-full max-w-4xl mx-auto px-4 py-6">
+      {/* Main Container with lazy-loaded routes - added pb-20 for bottom nav space on mobile */}
+      <main className="flex-grow w-full max-w-4xl mx-auto px-4 py-6 pb-24 sm:pb-6">
         <Suspense fallback={<SplashScreen />}>
           <Routes>
             <Route path="/" element={<Home />} />
@@ -44,9 +45,11 @@ function AppRoutes() {
       </main>
 
       {/* Trust Footer */}
-      <footer className="bg-brand-gray-200 border-t border-brand-gray-300 py-4 text-center text-xs text-brand-gray-550">
+      <footer className="bg-brand-gray-200 border-t border-brand-gray-300 py-4 pb-20 sm:pb-4 text-center text-xs text-brand-muted hidden sm:block">
         <p>© 2026 Standard Pumps & Borewell. Estimates are estimates only.</p>
       </footer>
+
+      <BottomNav />
 
       {/* PWA Install Prompt (bottom-anchored) */}
       {!isInstalled && (

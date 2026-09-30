@@ -1,13 +1,17 @@
 import toast from "react-hot-toast";
 
 /**
- * Service to manage professional quotation sharing behaviors,
+ * Service to manage professional quotation and invoice sharing behaviors,
  * optimizing separately for mobile (Web Share API / Native) and
  * desktop (WhatsApp Web / Clipboard Copy fallbacks).
  */
 export const shareService = {
+  // ==========================================
+  // QUOTATION TEXT FORMATTERS
+  // ==========================================
+
   /**
-   * Builds the premium pre-filled WhatsApp text when a PDF is attached.
+   * Builds the premium pre-filled WhatsApp text when a quotation PDF is attached.
    */
   formatAttachmentText() {
     return `Assalamu Alaikum.\n\nPlease find your quotation from Standard Pumps & Borewell attached.\n\nFor any assistance please contact us.\n\nStandard Pumps & Borewell\n📞 9110704747`;
@@ -63,19 +67,107 @@ _Thank you for your business!_
 📍 *Address:* PILLAR NO 101,ATTAPUR, RINGROAD ,HYDERABAD,TELANGANA 500048`;
   },
 
+  // ==========================================
+  // INVOICE TEXT FORMATTERS
+  // ==========================================
+
   /**
-   * Shares the estimate dynamically.
-   * - On Mobile: Attempts navigator.share() with File attachment
-   * - On Desktop: Deep-links to WhatsApp Web
-   * - Fallback: Copies text to clipboard
+   * Builds the premium pre-filled WhatsApp text when an invoice PDF is attached.
+   */
+  formatInvoiceAttachmentText(invoice) {
+    const invNo = invoice?.invoice_number || "Invoice";
+    return `Assalamu Alaikum.\n\nPlease find your Bill/Invoice (${invNo}) from Standard Pumps & Borewell attached.\n\nFor any query or assistance, please contact us.\n\nStandard Pumps & Borewell\n📞 9110704747`;
+  },
+
+  /**
+   * Builds a structured plain-text invoice summary for chat apps when NO PDF is attached.
+   */
+  formatInvoiceShareText(invoice) {
+    if (!invoice) return "";
+    const {
+      invoice_number,
+      customer_name,
+      phone,
+      date,
+      is_gst,
+      items = [],
+      subtotal = 0,
+      total_tax = 0,
+      grand_total = 0,
+      payment_mode = "Cash"
+    } = invoice;
+
+    const itemsSummary = items
+      .map((it) => `• ${it.name} (${it.qty} x ₹${parseFloat(it.price).toLocaleString("en-IN")}) = ₹${parseFloat(it.amount).toLocaleString("en-IN")}`)
+      .join("\n");
+
+    const taxLine = is_gst ? `\n• *GST (18%):* ₹${total_tax.toLocaleString("en-IN", { minimumFractionDigits: 2 })}` : "";
+
+    return `🧾 *STANDARD PUMPS & BOREWELL*
+----------------------------------------
+*${is_gst ? "TAX INVOICE" : "RETAIL INVOICE"}: #${invoice_number}*
+
+👤 *Customer:* ${customer_name}
+📞 *Phone:* ${phone}
+📅 *Date:* ${date}
+💳 *Payment Mode:* ${payment_mode}
+
+*PURCHASED ITEMS:*
+${itemsSummary}
+----------------------------------------
+• *Subtotal:* ₹${subtotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}${taxLine}
+💰 *Grand Total: ₹${grand_total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}*
+----------------------------------------
+_Thank you for your business!_
+📞 *Contact Shop:* +91 9110704747 , +91 9581472786
+📍 *Address:* Pillar No 101, Attapur, Ring Road, Hyderabad - 500048`;
+  },
+
+  // ==========================================
+  // SHARING HANDLERS
+  // ==========================================
+
+  /**
+   * Shares a quotation estimate dynamically.
    */
   async shareQuotation(quotation, { mode = "all", pdfFile = null } = {}) {
     const fallbackText = this.formatShareText(quotation);
     const attachmentText = this.formatAttachmentText();
     const textToShare = pdfFile ? attachmentText : fallbackText;
 
+    await this._dispatchShare({
+      title: "Standard Pumps Quotation",
+      textToShare,
+      mode,
+      pdfFile,
+      successMsg: "Quotation shared successfully!"
+    });
+  },
+
+  /**
+   * Shares a virtual invoice dynamically.
+   */
+  async shareInvoice(invoice, { mode = "all", pdfFile = null } = {}) {
+    const fallbackText = this.formatInvoiceShareText(invoice);
+    const attachmentText = this.formatInvoiceAttachmentText(invoice);
+    const textToShare = pdfFile ? attachmentText : fallbackText;
+
+    await this._dispatchShare({
+      title: `Standard Pumps Invoice #${invoice?.invoice_number || ""}`,
+      textToShare,
+      mode,
+      pdfFile,
+      successMsg: "Invoice shared successfully!"
+    });
+  },
+
+  /**
+   * Internal common dispatch logic for Web Share & WhatsApp deep-linking.
+   * @private
+   */
+  async _dispatchShare({ title, textToShare, mode = "all", pdfFile = null, successMsg }) {
     if (!textToShare) {
-      toast.error("Invalid quotation context for sharing.");
+      toast.error("Invalid document context for sharing.");
       return;
     }
 
@@ -87,7 +179,7 @@ _Thank you for your business!_
     if (isMobile && navigator.share) {
       try {
         const shareData = {
-          title: "Standard Pumps Quotation",
+          title,
           text: textToShare,
         };
 
@@ -96,7 +188,7 @@ _Thank you for your business!_
         }
 
         await navigator.share(shareData);
-        toast.success("Quotation shared successfully!");
+        toast.success(successMsg || "Shared successfully!");
         return;
       } catch (err) {
         if (err.name === "AbortError") {
@@ -110,8 +202,7 @@ _Thank you for your business!_
     if (mode === "whatsapp" || isMobile) {
       const encodedText = encodeURIComponent(textToShare);
       
-      // Note: WhatsApp Web/Direct link does not support passing files via URL scheme natively.
-      // If we have a PDF, we trigger a forced physical download so it's in the device's "Recent Downloads".
+      // If we have a PDF, trigger a forced physical download so it's in the device's "Recent Downloads".
       if (pdfFile) {
         try {
           const url = URL.createObjectURL(pdfFile);
@@ -152,18 +243,17 @@ _Thank you for your business!_
    */
   copyToClipboard(text) {
     if (!navigator.clipboard) {
-      // Fallback for older browsers
       const textArea = document.createElement("textarea");
       textArea.value = text;
-      textArea.style.position = "fixed";  // Avoid scrolling to bottom
+      textArea.style.position = "fixed";
       document.body.appendChild(textArea);
       textArea.focus();
       textArea.select();
       try {
         document.execCommand("copy");
-        toast.success("Quotation text copied to clipboard!");
+        toast.success("Document text copied to clipboard!");
       } catch (err) {
-        toast.error("Failed to copy quotation text.");
+        toast.error("Failed to copy document text.");
       }
       document.body.removeChild(textArea);
       return;
@@ -172,11 +262,13 @@ _Thank you for your business!_
     navigator.clipboard
       .writeText(text)
       .then(() => {
-        toast.success("Quotation text copied to clipboard!");
+        toast.success("Document text copied to clipboard!");
       })
       .catch((err) => {
         console.error("Clipboard write failure:", err);
-        toast.error("Failed to copy quotation text.");
+        toast.error("Failed to copy document text.");
       });
   }
 };
+
+export default shareService;

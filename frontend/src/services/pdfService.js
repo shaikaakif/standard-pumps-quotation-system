@@ -16,21 +16,21 @@ export const pdfService = {
    * @param {number|string} depth - The bore depth in feet.
    * @param {object} options - Options containing state callbacks.
    */
-  async generateClientPdf(container, customerName, depth, { onStart, onComplete, onError } = {}) {
+  async generateClientPdf(container, customerName, depth, { onStart, onComplete, onError, customFilename = null } = {}) {
     if (!container) {
-      if (onError) onError(new Error("Quotation container DOM node not found."));
+      if (onError) onError(new Error("Container DOM node not found."));
       return;
     }
 
     try {
       if (onStart) onStart();
 
-      const sanitizedName = customerName.replace(/[^a-zA-Z0-9]/g, "_");
-      const filename = `Quotation_${sanitizedName}_${depth}FT.pdf`;
+      const sanitizedName = (customerName || "Customer").replace(/[^a-zA-Z0-9]/g, "_");
+      const filename = customFilename || `Quotation_${sanitizedName}_${depth}FT.pdf`;
 
       // Define html2pdf options for high quality rendering
       const opt = {
-        margin:       [10, 10, 10, 10], // Margin in mm
+        margin:       [8, 8, 8, 8], // Clean compact 8mm margin
         filename:     filename,
         image:        { type: 'jpeg', quality: 1.0 }, // Maximum quality
         html2canvas:  { 
@@ -60,14 +60,14 @@ export const pdfService = {
   /**
    * Generates a PDF Blob entirely offline for Web Share API native sharing.
    */
-  async generatePdfBlob(container, customerName, depth) {
+  async generatePdfBlob(container, customerName, depth, customFilename = null) {
     if (!container) throw new Error("Container not found");
 
-    const sanitizedName = customerName.replace(/[^a-zA-Z0-9]/g, "_");
-    const filename = `Quotation_${sanitizedName}_${depth}FT.pdf`;
+    const sanitizedName = (customerName || "Customer").replace(/[^a-zA-Z0-9]/g, "_");
+    const filename = customFilename || `Quotation_${sanitizedName}_${depth}FT.pdf`;
 
     const opt = {
-      margin:       [10, 10, 10, 10],
+      margin:       [8, 8, 8, 8],
       filename:     filename,
       image:        { type: 'jpeg', quality: 1.0 },
       html2canvas:  { scale: 2, useCORS: true, letterRendering: true },

@@ -22,9 +22,15 @@ export const QuotationProvider = ({ children }) => {
     preferred_brand: "",
   });
 
+  // Document Type & Tab Switcher State: 'quotation' | 'invoice'
+  const [activeTab, setActiveTab] = useState("quotation");
+  const [activeDocType, setActiveDocType] = useState("QUOTATION");
+  const [invoiceData, setInvoiceData] = useState(null);
+
   const saveQuotation = (data) => {
     setQuotationResponse(data);
     setQuotationSummary(data.summary || null);
+    setActiveDocType("QUOTATION");
     setIsNewQuotation(true); // Flag this as a brand new quotation for confetti
     
     // Mapped quotation metadata
@@ -38,6 +44,22 @@ export const QuotationProvider = ({ children }) => {
     });
   };
 
+  const saveInvoice = (data) => {
+    setInvoiceData(data);
+    setActiveDocType("INVOICE");
+    setIsNewQuotation(true);
+
+    // Save to local invoice cache
+    try {
+      const existingInvoices = JSON.parse(localStorage.getItem("spqs_invoices") || "[]");
+      const filtered = existingInvoices.filter((inv) => inv.invoice_id !== data.invoice_id);
+      const updated = [data, ...filtered].slice(0, 100); // keep up to 100 recent invoices
+      localStorage.setItem("spqs_invoices", JSON.stringify(updated));
+    } catch (e) {
+      console.warn("Could not cache invoice locally:", e);
+    }
+  };
+
   const clearQuotation = () => {
     setQuotationResponse(null);
     setQuotationSummary(null);
@@ -46,12 +68,25 @@ export const QuotationProvider = ({ children }) => {
     setIsNewQuotation(false);
   };
 
+  const clearInvoice = () => {
+    setInvoiceData(null);
+    setError(null);
+    setIsNewQuotation(false);
+  };
+
   return (
     <QuotationContext.Provider
       value={{
+        activeTab,
+        setActiveTab,
+        activeDocType,
+        setActiveDocType,
         quotationResponse,
         quotationSummary,
         quotationMetadata,
+        invoiceData,
+        saveInvoice,
+        clearInvoice,
         isLoading,
         setIsLoading,
         error,

@@ -1,4 +1,5 @@
 import datetime
+import uuid
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -110,6 +111,31 @@ def get_quotation_by_id(quotation_id: str, db: Session = Depends(get_db)):
     return quotation.quotation_json
 
 
+@router.post("/invoice", status_code=status.HTTP_201_CREATED)
+def save_invoice_history(invoice_data: dict, db: Session = Depends(get_db)):
+    """
+    Saves a virtual invoice to the persistent database history.
+    """
+    try:
+        q_data = {
+            "quotation_id": invoice_data.get("invoice_id", str(uuid.uuid4())),
+            "customer_name": invoice_data.get("customer_name", "Valued Customer"),
+            "phone": invoice_data.get("phone", ""),
+            "feet": 0,
+            "mode": "GST_INVOICE" if invoice_data.get("is_gst") else "RETAIL_INVOICE",
+            "totals": {"grand_total": invoice_data.get("grand_total", 0.0)},
+            "doc_type": "INVOICE",
+            **invoice_data,
+        }
+        quotation = HistoryService.save_quotation(db=db, q_data=q_data)
+        return {"status": "success", "id": quotation.id}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to record invoice history: {str(e)}",
+        )
+
+
 @router.delete("/{quotation_id}", status_code=status.HTTP_200_OK)
 def soft_delete_quotation(quotation_id: str, db: Session = Depends(get_db)):
     """
@@ -122,3 +148,4 @@ def soft_delete_quotation(quotation_id: str, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND, detail="Quotation record not found."
         )
     return {"status": "success", "message": "Quotation successfully soft-deleted."}
+

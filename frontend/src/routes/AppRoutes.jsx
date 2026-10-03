@@ -29,8 +29,8 @@ function AppRoutes() {
       {/* Offline connectivity banner */}
       <OfflineBanner isOnline={isOnline} isBackendAvailable={isBackendAvailable} />
 
-      {/* Main Container with lazy-loaded routes - added pb-20 for bottom nav space on mobile */}
-      <main className="flex-grow w-full max-w-4xl mx-auto px-4 py-6 pb-24 sm:pb-6">
+      {/* Main Container with lazy-loaded routes - optimized for mobile PWA viewports */}
+      <main className="flex-grow w-full max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-6 pb-20 sm:pb-6">
         <Suspense fallback={<SplashScreen />}>
           <Routes>
             <Route path="/" element={<Home />} />

@@ -20,7 +20,7 @@ import LoadingOverlay from "../components/system/LoadingOverlay";
 import WatermarkBackground from "../components/quotation/WatermarkBackground";
 import InvoiceDocument from "../components/invoice/InvoiceDocument";
 import CashbackModal from "../components/cashback/CashbackModal";
-import { FiAlertCircle, FiArrowLeft, FiGift } from "react-icons/fi";
+import { FiAlertCircle, FiArrowLeft, FiGift, FiX } from "react-icons/fi";
 import { FaCrown } from "react-icons/fa";
 
 function Preview() {
@@ -39,6 +39,7 @@ function Preview() {
   
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isCashbackModalOpen, setIsCashbackModalOpen] = useState(false);
+  const [isVipBannerDismissed, setIsVipBannerDismissed] = useState(false);
   const pdfLoader = useLoadingSteps("pdf", 2500);
 
   const isInvoice = activeDocType === "INVOICE" && Boolean(invoiceData);
@@ -199,35 +200,47 @@ function Preview() {
   }
 
   return (
-    <div className={`w-full py-4 sm:py-8 relative ${isGeneratingPdf ? "pointer-events-none select-none" : ""}`}>
+    <div className={`w-full pt-2 pb-20 sm:py-8 relative ${isGeneratingPdf ? "pointer-events-none select-none" : ""}`}>
       
-      {/* 2. Top Promotional Banner for Invoices: Lenskart Cashback Pass */}
-      {isInvoice && (
-        <div className="max-w-[800px] mx-auto mb-4 bg-gradient-to-r from-brand-primary via-brand-navy-900 to-brand-primary text-white p-3.5 sm:p-4 rounded-xl border border-brand-accent/40 shadow-md flex flex-col sm:flex-row items-center justify-between gap-3 no-print">
-          <div className="flex items-center space-x-3 text-left">
-            <div className="w-10 h-10 rounded-xl bg-brand-accent/20 text-brand-accent flex items-center justify-center border border-brand-accent/30 shrink-0 shadow-inner">
-              <FaCrown className="w-5 h-5 text-brand-accent" />
+      {/* 2. Top Promotional Banner for Invoices: Sleek Compact VIP Privilege Strip */}
+      {isInvoice && !isVipBannerDismissed && (
+        <div className="max-w-[800px] mx-auto mb-3 bg-gradient-to-r from-brand-navy-950 via-brand-primary to-brand-navy-900 text-white px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-brand-accent/40 shadow-sm flex items-center justify-between gap-2 no-print transition-all">
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-brand-accent/20 text-brand-accent flex items-center justify-center border border-brand-accent/30 shrink-0">
+              <FaCrown className="w-4 h-4 text-brand-accent" />
             </div>
-            <div>
-              <h4 className="text-xs sm:text-sm font-black uppercase tracking-wide flex items-center gap-1.5">
-                <span>VIP Cashback & Loyalty Pass</span>
-                <span className="text-[9px] bg-brand-accent text-brand-navy-950 font-black px-1.5 py-0.5 rounded-full uppercase">
-                  Lenskart Model
+            <div className="min-w-0">
+              <div className="flex items-center space-x-1.5 truncate">
+                <span className="text-xs sm:text-sm font-black uppercase tracking-wide truncate">
+                  VIP Cashback Pass
                 </span>
-              </h4>
-              <p className="text-[11px] text-brand-navy-200 mt-0.5">
-                Lock in repeat business: 10% Cashback + 1-Year Free On-Ground Service guarantee!
+                <span className="text-[9px] bg-brand-accent text-brand-navy-950 font-black px-1.5 py-0.5 rounded-full uppercase shrink-0">
+                  10% Back
+                </span>
+              </div>
+              <p className="text-[10px] text-brand-navy-200 hidden sm:block">
+                Lock in repeat business: 10% Cashback + 1-Year Free Service Guarantee!
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setIsCashbackModalOpen(true)}
-            className="w-full sm:w-auto flex items-center justify-center space-x-1.5 bg-brand-accent hover:bg-brand-accent/90 text-brand-navy-950 font-black px-4 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-all shadow-md shrink-0"
-          >
-            <FiGift className="w-4 h-4" />
-            <span>Generate Cashback Card</span>
-          </button>
+          <div className="flex items-center space-x-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsCashbackModalOpen(true)}
+              className="flex items-center space-x-1 bg-brand-accent hover:bg-yellow-400 text-brand-navy-950 font-black px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg text-[11px] sm:text-xs uppercase tracking-wider transition-all shadow-xs"
+            >
+              <FiGift className="w-3.5 h-3.5" />
+              <span>Create Card</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsVipBannerDismissed(true)}
+              className="p-1 text-brand-navy-300 hover:text-white rounded-lg transition-colors"
+              title="Dismiss banner"
+            >
+              <FiX className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
 

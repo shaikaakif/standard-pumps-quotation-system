@@ -382,12 +382,12 @@ function CustomerForm() {
         </div>
       )}
 
-      {/* Submit Button Sticky on Mobile */}
-      <div className="sm:relative fixed bottom-16 sm:bottom-auto left-0 right-0 p-4 sm:p-0 bg-brand-surface sm:bg-transparent border-t border-brand-gray-200 sm:border-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] sm:shadow-none z-40">
+      {/* Submit Button In-Flow (Zero screen overlap) */}
+      <div className="mt-6">
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-full flex items-center justify-center space-x-2 bg-brand-primary text-white py-4 rounded-xl font-bold hover:bg-brand-primary/90 transition-colors shadow-lg shadow-brand-primary/25 focus:outline-none ${
+          className={`w-full flex items-center justify-center space-x-2 bg-brand-primary text-white py-3.5 sm:py-4 rounded-xl font-bold hover:bg-brand-primary/90 transition-all shadow-md shadow-brand-primary/20 active:scale-[0.99] focus:outline-none ${
             isLoading ? "opacity-75 cursor-not-allowed bg-brand-primary/80" : ""
           }`}
         >
@@ -398,7 +398,7 @@ function CustomerForm() {
             </>
           ) : (
             <>
-              <FiFileText className="w-5 h-5" />
+              <FiFileText className="w-5 h-5 text-brand-accent" />
               <span className="uppercase tracking-wider">Generate Professional Estimate</span>
             </>
           )}

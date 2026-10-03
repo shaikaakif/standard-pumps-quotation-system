@@ -37,7 +37,7 @@ export default function InvoiceDocument({ invoice }) {
   } = invoice;
 
   return (
-    <div className="quotation-container bg-white border border-brand-gray-200 shadow-sm rounded-xl p-5 sm:p-7 relative overflow-hidden text-brand-text">
+    <div className="quotation-container bg-white border border-brand-gray-200 shadow-sm rounded-xl p-3.5 sm:p-7 relative overflow-hidden text-brand-text">
       {/* Background Watermark */}
       <WatermarkBackground text={settings?.business?.shop_name || "STANDARD PUMPS & BOREWELL"} visible={true} />
 
@@ -128,8 +128,8 @@ export default function InvoiceDocument({ invoice }) {
       </div>
 
       {/* 3. Items Table (Compact Single Page Layout) */}
-      <div className="border border-brand-gray-200 rounded-lg overflow-hidden mb-4">
-        <table className="w-full text-left text-xs border-collapse">
+      <div className="border border-brand-gray-200 rounded-lg overflow-x-auto mb-4">
+        <table className="w-full min-w-[420px] sm:min-w-full text-left text-xs border-collapse">
           <thead>
             <tr className="bg-brand-primary text-white text-[10px] uppercase tracking-wider">
               <th className="py-2.5 px-3 w-10 text-center">#</th>

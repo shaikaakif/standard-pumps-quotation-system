@@ -339,25 +339,25 @@ export default function InvoiceForm() {
         )}
       </div>
 
-      {/* 3. Quick Preset Chips */}
+      {/* 3. Quick Preset Chips (Swipeable Horizontal Carousel) */}
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1.5 px-0.5">
           <span className="text-xs font-bold uppercase tracking-wider text-brand-muted flex items-center">
             <FiTag className="mr-1 text-brand-secondary" /> Quick-Add Hardware Items
           </span>
-          <span className="text-[10px] text-brand-muted">Tap to append row</span>
+          <span className="text-[10px] text-brand-muted">Swipe & tap to append</span>
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex gap-2 overflow-x-auto pb-2 pt-0.5 scrollbar-none snap-x -mx-1 px-1">
           {QUICK_PRESETS.map((preset, idx) => (
             <button
               key={idx}
               type="button"
               onClick={() => handleAddItem(preset)}
-              className="text-[11px] font-medium bg-white hover:bg-brand-primary/10 hover:text-brand-primary hover:border-brand-primary text-brand-text border border-brand-gray-300 px-2.5 py-1.5 rounded-lg shadow-2xs transition-all flex items-center space-x-1"
+              className="text-[11px] font-medium bg-white hover:bg-brand-primary/10 hover:text-brand-primary hover:border-brand-primary text-brand-text border border-brand-gray-300 px-3 py-2 rounded-xl shadow-2xs transition-all flex items-center space-x-1.5 shrink-0 snap-start active:scale-95"
             >
-              <FiPlus className="w-3 h-3 text-brand-secondary" />
-              <span>{preset.name}</span>
-              <span className="font-mono text-brand-muted text-[10px]">(₹{preset.price})</span>
+              <FiPlus className="w-3 h-3 text-brand-secondary shrink-0" />
+              <span className="whitespace-nowrap">{preset.name}</span>
+              <span className="font-mono text-brand-muted text-[10px] shrink-0">(₹{preset.price})</span>
             </button>
           ))}
         </div>
@@ -392,20 +392,13 @@ export default function InvoiceForm() {
             return (
               <div 
                 key={item.id} 
-                className="bg-brand-gray-50/70 border border-brand-gray-200 rounded-xl p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 transition-all hover:border-brand-gray-300"
+                className="bg-brand-gray-50/70 border border-brand-gray-200 rounded-xl p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 transition-all hover:border-brand-gray-300"
               >
-                {/* S.No Badge */}
-                <div className="flex items-center justify-between sm:justify-start">
+                {/* Mobile Top Row: Number badge + Description Input + Delete */}
+                <div className="flex items-center gap-2 flex-1">
                   <span className="w-6 h-6 rounded-full bg-brand-primary text-white text-[11px] font-bold flex items-center justify-center shrink-0">
                     {index + 1}
                   </span>
-                  <span className="sm:hidden text-xs font-mono font-bold text-brand-primary">
-                    ₹{rowTotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </span>
-                </div>
-
-                {/* Item Name / Description */}
-                <div className="flex-1">
                   <input
                     type="text"
                     placeholder="Item Description (e.g. 2 HP Submersible Motor)"
@@ -413,23 +406,33 @@ export default function InvoiceForm() {
                     onChange={(e) => handleItemChange(item.id, "name", e.target.value)}
                     className="w-full text-xs sm:text-sm px-3 py-2 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-medium"
                   />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveItem(item.id)}
+                    className="sm:hidden p-2 text-brand-muted hover:text-brand-danger hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                    title="Remove Item"
+                  >
+                    <FiTrash2 className="w-4 h-4" />
+                  </button>
                 </div>
 
-                {/* Qty & Price Row */}
-                <div className="flex items-center space-x-2">
-                  <div className="w-20">
+                {/* Bottom Row on Mobile / Inline on Desktop: Qty & Price & Total */}
+                <div className="flex items-center justify-between sm:justify-end gap-2 pl-8 sm:pl-0">
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-[10px] text-brand-muted uppercase font-bold sm:hidden">Qty:</span>
                     <input
                       type="number"
                       min="1"
                       placeholder="Qty"
                       value={item.qty}
                       onChange={(e) => handleItemChange(item.id, "qty", e.target.value)}
-                      className="w-full text-xs sm:text-sm text-center px-2 py-2 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-mono"
+                      className="w-16 sm:w-20 text-xs sm:text-sm text-center px-2 py-2 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-mono"
                       title="Quantity"
                     />
                   </div>
 
-                  <div className="w-28">
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-[10px] text-brand-muted uppercase font-bold sm:hidden">Rate:</span>
                     <input
                       type="number"
                       min="0"
@@ -437,21 +440,21 @@ export default function InvoiceForm() {
                       placeholder="Price (₹)"
                       value={item.price}
                       onChange={(e) => handleItemChange(item.id, "price", e.target.value)}
-                      className="w-full text-xs sm:text-sm text-right px-2.5 py-2 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-mono"
+                      className="w-24 sm:w-28 text-xs sm:text-sm text-right px-2 py-2 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-mono"
                       title="Unit Price in ₹"
                     />
                   </div>
 
-                  {/* Calculated row total for desktop */}
-                  <div className="hidden sm:block w-28 text-right font-mono font-bold text-xs text-brand-primary px-1">
+                  {/* Calculated row total */}
+                  <div className="w-24 sm:w-28 text-right font-mono font-bold text-xs text-brand-primary px-1">
                     ₹{rowTotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
 
-                  {/* Delete Button */}
+                  {/* Delete Button (Desktop) */}
                   <button
                     type="button"
                     onClick={() => handleRemoveItem(item.id)}
-                    className="p-2 text-brand-muted hover:text-brand-danger hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                    className="hidden sm:block p-2 text-brand-muted hover:text-brand-danger hover:bg-red-50 rounded-lg transition-colors shrink-0"
                     title="Remove Item"
                   >
                     <FiTrash2 className="w-4 h-4" />
@@ -541,12 +544,12 @@ export default function InvoiceForm() {
         </div>
       </div>
 
-      {/* 6. Sticky Mobile Action Button */}
-      <div className="sm:relative fixed bottom-16 sm:bottom-auto left-0 right-0 p-4 sm:p-0 bg-brand-surface sm:bg-transparent border-t border-brand-gray-200 sm:border-none shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] sm:shadow-none z-40">
+      {/* 6. Form Submit Button (Clean in-flow layout, zero screen overlap) */}
+      <div className="mt-6">
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-full flex items-center justify-center space-x-2 bg-brand-primary text-white py-4 rounded-xl font-bold hover:bg-brand-primary/90 transition-colors shadow-lg shadow-brand-primary/25 focus:outline-none ${
+          className={`w-full flex items-center justify-center space-x-2 bg-brand-primary text-white py-3.5 sm:py-4 rounded-xl font-bold hover:bg-brand-primary/90 transition-all shadow-md shadow-brand-primary/20 active:scale-[0.99] focus:outline-none ${
             isLoading ? "opacity-75 cursor-not-allowed bg-brand-primary/80" : ""
           }`}
         >

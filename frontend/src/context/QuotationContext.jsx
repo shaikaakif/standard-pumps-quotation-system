@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import { supabaseService } from "../services/supabaseClient";
 
 const QuotationContext = createContext();
 
@@ -42,6 +42,13 @@ export const QuotationProvider = ({ children }) => {
       feet: data.feet,
       mode: data.mode,
     });
+
+    // Background sync customer & quotation to Supabase if configured
+    try {
+      supabaseService.syncQuotation(data);
+    } catch (e) {
+      console.warn("Background Supabase quotation sync skipped:", e);
+    }
   };
 
   const saveInvoice = (data) => {
@@ -57,6 +64,13 @@ export const QuotationProvider = ({ children }) => {
       localStorage.setItem("spqs_invoices", JSON.stringify(updated));
     } catch (e) {
       console.warn("Could not cache invoice locally:", e);
+    }
+
+    // Background sync customer & invoice to Supabase if configured
+    try {
+      supabaseService.syncInvoice(data);
+    } catch (e) {
+      console.warn("Background Supabase invoice sync skipped:", e);
     }
   };
 

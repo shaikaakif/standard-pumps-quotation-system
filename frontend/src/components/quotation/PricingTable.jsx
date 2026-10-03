@@ -7,7 +7,7 @@ function PricingTable({ pipe, cable, motors, starter, accessories, fitting }) {
     <div className="bg-white border border-brand-gray-200 rounded-lg overflow-hidden mb-5 quotation-card-group shadow-sm">
       {/* Scrollable grid frame for mobile screenshot safety */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full min-w-[480px] sm:min-w-full text-left border-collapse">
           <thead>
             <tr className="bg-brand-navy-900 text-white text-[10px] uppercase tracking-wider">
               <th className="px-4 py-3 font-bold">Item & Description</th>

@@ -53,22 +53,26 @@ function Navbar({ isOnline = true, isBackendAvailable = true }) {
 
   return (
     <header className="bg-brand-primary text-white shadow-md sticky top-0 z-50">
-      <div className="max-w-4xl mx-auto px-4 flex items-center justify-between h-16">
+      <div className="max-w-4xl mx-auto px-4 flex items-center justify-between h-14 sm:h-16">
         {/* Brand Identity */}
-        <NavLink to="/" className="flex items-center space-x-3">
+        <NavLink to="/" className="flex items-center space-x-2.5">
           {logos?.appLogo ? (
-            <img src={logos.appLogo} alt="App Logo" className="h-8 object-contain rounded bg-white p-1" />
+            <img src={logos.appLogo} alt="App Logo" className="h-7 sm:h-8 object-contain rounded bg-white p-1" />
           ) : (
-            <div className="bg-brand-accent px-3 py-1.5 rounded font-bold text-brand-primary tracking-wider text-sm shadow">
-              SPQS
+            <div className="bg-brand-accent px-2.5 py-1 sm:px-3 sm:py-1.5 rounded font-black text-brand-primary tracking-wider text-xs sm:text-sm shadow">
+              SP
             </div>
           )}
           <div>
-            <h1 className="text-base font-bold tracking-tight uppercase leading-none hidden sm:block">STANDARD PUMPS</h1>
-            <h1 className="text-base font-bold tracking-tight uppercase leading-none sm:hidden">SPQS</h1>
+            <div className="flex items-center space-x-1.5">
+              <h1 className="text-sm sm:text-base font-extrabold tracking-tight uppercase leading-none text-white">
+                STANDARD PUMPS
+              </h1>
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse" />
+            </div>
             <div className="flex items-center space-x-2 mt-0.5">
-              <p className="text-[10px] text-brand-navy-200 uppercase tracking-widest font-semibold hidden sm:block">
-                Quotation Automation
+              <p className="text-[9px] sm:text-[10px] text-brand-navy-200 uppercase tracking-widest font-semibold">
+                Quotation & Invoice
               </p>
               {/* App version */}
               <span className="text-[8px] text-brand-navy-300 font-mono">v{APP_VERSION}</span>
@@ -77,16 +81,17 @@ function Navbar({ isOnline = true, isBackendAvailable = true }) {
         </NavLink>
 
         {/* Status + Navigation */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3">
           {/* Connectivity status chip */}
           {getStatusChip()}
           
           {canShowPrompt && (
             <button
               onClick={promptInstall}
-              className="hidden sm:flex items-center space-x-1 bg-brand-accent text-brand-primary px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider shadow-sm hover:bg-yellow-400 transition-colors"
+              className="flex items-center space-x-1 bg-brand-accent text-brand-primary px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider shadow-sm hover:bg-yellow-400 transition-colors active:scale-95"
             >
-              📲 Install App
+              <span>📲</span>
+              <span className="hidden xs:inline">Install</span>
             </button>
           )}
 

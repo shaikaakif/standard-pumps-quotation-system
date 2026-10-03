@@ -8,6 +8,7 @@ import QuotationCustomization from '../components/settings/QuotationCustomizatio
 import DefaultsForm from '../components/settings/DefaultsForm';
 import SystemInfoCard from '../components/settings/SystemInfoCard';
 import DataManagement from '../components/settings/DataManagement';
+import SupabaseSyncForm from '../components/settings/SupabaseSyncForm';
 
 const Settings = () => {
   const { 
@@ -74,6 +75,10 @@ const Settings = () => {
 
         <section>
           <DataManagement settings={settings} />
+        </section>
+
+        <section>
+          <SupabaseSyncForm />
         </section>
 
         <section>

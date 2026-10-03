@@ -25,16 +25,30 @@ function History() {
   const [offset, setOffset] = useState(0);
   const [error, setError] = useState(null);
 
-  // Load cached invoices
-  const loadCachedInvoices = useCallback(() => {
+  // Load cached invoices & quotations for offline/serverless support
+  const loadCachedRecords = useCallback(() => {
     try {
-      const stored = localStorage.getItem("spqs_invoices");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setInvoiceItems(parsed);
+      const storedInv = localStorage.getItem("spqs_invoices");
+      if (storedInv) {
+        setInvoiceItems(JSON.parse(storedInv));
       }
     } catch (e) {
       console.warn("Could not load local invoices:", e);
+    }
+
+    try {
+      const storedQuotes = localStorage.getItem("spqs_quotations");
+      if (storedQuotes) {
+        const parsed = JSON.parse(storedQuotes);
+        setQuotationItems((prev) => {
+          const map = new Map();
+          parsed.forEach((q) => map.set(q.quotation_id, q));
+          prev.forEach((q) => map.set(q.quotation_id, q));
+          return Array.from(map.values());
+        });
+      }
+    } catch (e) {
+      console.warn("Could not load local quotations:", e);
     }
   }, []);
 
@@ -80,8 +94,8 @@ function History() {
   }, [searchTerm, limit]);
 
   useEffect(() => {
-    loadCachedInvoices();
-  }, [loadCachedInvoices]);
+    loadCachedRecords();
+  }, [loadCachedRecords]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -108,6 +122,17 @@ function History() {
       setIsNewQuotation(false);
       setActiveDocType("INVOICE");
       toast.success(`Invoice #${item.invoice_number} Reopened!`);
+      navigate("/preview");
+      return;
+    }
+
+    // Serverless check: If quotation data is already stored inside item
+    const quoteObj = item.quotation_data || item;
+    if (quoteObj && quoteObj.pipe && quoteObj.totals) {
+      saveQuotation(quoteObj);
+      setIsNewQuotation(false);
+      setActiveDocType("QUOTATION");
+      toast.success("Quotation Reopened!");
       navigate("/preview");
       return;
     }

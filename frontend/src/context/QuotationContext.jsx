@@ -43,6 +43,16 @@ export const QuotationProvider = ({ children }) => {
       mode: data.mode,
     });
 
+    // Cache quotation locally for offline support
+    try {
+      const existingQuotes = JSON.parse(localStorage.getItem("spqs_quotations") || "[]");
+      const filtered = existingQuotes.filter((q) => q.quotation_id !== data.quotation_id);
+      const updated = [data, ...filtered].slice(0, 100);
+      localStorage.setItem("spqs_quotations", JSON.stringify(updated));
+    } catch (e) {
+      console.warn("Could not cache quotation locally:", e);
+    }
+
     // Background sync customer & quotation to Supabase if configured
     try {
       supabaseService.syncQuotation(data);

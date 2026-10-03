@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuotation } from "../../context/QuotationContext";
 import apiClient from "../../services/api";
+import quotationService from "../../services/quotationService";
 import toast from "react-hot-toast";
 import { 
   FiUser, FiPhone, FiCompass, FiZap, FiToggleRight, FiCpu, 
@@ -92,7 +93,8 @@ function CustomerForm() {
     loader.startLoading();
 
     try {
-      const response = await apiClient.post("/quotation/generate", {
+      // 1. Generate quotation client-side via 100% serverless calculation engine
+      const quotationData = quotationService.generateQuotation({
         customer_name: formData.customer_name,
         phone: formData.phone.replace(/\D/g, ""),
         feet: parseInt(formData.feet, 10),
@@ -102,31 +104,19 @@ function CustomerForm() {
         mode: formData.mode,
       });
 
-      // Validate response structure
-      if (response.data && response.data.quotation_id) {
-        loader.completeLoading();
-        
-        // Artificial short lag for high-fidelity experience completion animation
-        setTimeout(() => {
-          saveQuotation(response.data);
-          toast.success("Professional Estimate Generated!");
-          setIsLoading(false);
-          navigate("/preview");
-        }, 500);
-      } else {
-        throw new Error("Invalid API response format.");
-      }
+      loader.completeLoading();
+
+      setTimeout(() => {
+        saveQuotation(quotationData);
+        toast.success("Professional Estimate Generated!");
+        setIsLoading(false);
+        navigate("/preview");
+      }, 500);
     } catch (err) {
       loader.stopLoading();
       setIsLoading(false);
       const errMsg = err.message || "An unexpected error occurred.";
       setError(errMsg);
-      
-      // Parse Pydantic validation errors from Axios response
-      if (err.validationErrors) {
-        setValidationErrors(err.validationErrors);
-      }
-      
       toast.error(errMsg);
     }
   };

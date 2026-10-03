@@ -75,7 +75,20 @@ class CustomerService {
       console.warn("Error reading local invoices:", e);
     }
 
-    // 2. Ingest Backend Quotation History
+    // 2. Ingest Local Quotations Cache (Serverless offline storage)
+    try {
+      const localQuotesRaw = localStorage.getItem("spqs_quotations");
+      if (localQuotesRaw) {
+        const localQuotes = JSON.parse(localQuotesRaw);
+        localQuotes.forEach((q) => {
+          this.processQuotation(q, getOrCreateCustomer);
+        });
+      }
+    } catch (e) {
+      console.warn("Error reading local quotations:", e);
+    }
+
+    // 2b. Ingest Remote Quotation History if server is available
     try {
       const response = await apiClient.get("/history", { params: { limit: 100 } });
       if (response.data && response.data.items) {
@@ -84,7 +97,7 @@ class CustomerService {
         });
       }
     } catch (e) {
-      console.warn("Backend quotation history unavailable (using offline data):", e?.message);
+      // Graceful fallback for serverless operation
     }
 
     // 3. Ingest Supabase Records if configured

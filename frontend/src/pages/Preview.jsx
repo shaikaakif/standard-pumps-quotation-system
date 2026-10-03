@@ -204,30 +204,30 @@ function Preview() {
       
       {/* 2. Top Promotional Banner for Invoices: Sleek Compact VIP Privilege Strip */}
       {isInvoice && !isVipBannerDismissed && (
-        <div className="max-w-[800px] mx-auto mb-3 bg-gradient-to-r from-brand-navy-950 via-brand-primary to-brand-navy-900 text-white px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-brand-accent/40 shadow-sm flex items-center justify-between gap-2 no-print transition-all">
-          <div className="flex items-center space-x-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-brand-accent/20 text-brand-accent flex items-center justify-center border border-brand-accent/30 shrink-0">
-              <FaCrown className="w-4 h-4 text-brand-accent" />
+        <div className="w-full mx-auto mb-4 bg-gradient-to-r from-brand-navy-900 via-brand-primary to-brand-navy-800 text-white p-3 sm:p-3.5 rounded-2xl border border-brand-accent/50 shadow-md flex items-center justify-between gap-3 no-print transition-all">
+          <div className="flex items-center space-x-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-brand-accent text-brand-navy-900 flex items-center justify-center font-black shadow-sm shrink-0">
+              <FaCrown className="w-4 h-4 text-brand-navy-900" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center space-x-1.5 truncate">
-                <span className="text-xs sm:text-sm font-black uppercase tracking-wide truncate">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs sm:text-sm font-black uppercase tracking-wide text-white">
                   VIP Cashback Pass
                 </span>
-                <span className="text-[9px] bg-brand-accent text-brand-navy-950 font-black px-1.5 py-0.5 rounded-full uppercase shrink-0">
+                <span className="text-[10px] bg-brand-accent text-brand-navy-900 font-black px-2 py-0.5 rounded-full uppercase shrink-0 shadow-xs">
                   10% Back
                 </span>
               </div>
-              <p className="text-[10px] text-brand-navy-200 hidden sm:block">
+              <p className="text-[11px] text-brand-navy-100 hidden sm:block font-medium">
                 Lock in repeat business: 10% Cashback + 1-Year Free Service Guarantee!
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-1.5 shrink-0">
+          <div className="flex items-center space-x-2 shrink-0">
             <button
               type="button"
               onClick={() => setIsCashbackModalOpen(true)}
-              className="flex items-center space-x-1 bg-brand-accent hover:bg-yellow-400 text-brand-navy-950 font-black px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg text-[11px] sm:text-xs uppercase tracking-wider transition-all shadow-xs"
+              className="flex items-center space-x-1.5 bg-brand-accent hover:bg-yellow-400 text-brand-navy-900 font-black px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95"
             >
               <FiGift className="w-3.5 h-3.5" />
               <span>Create Card</span>
@@ -235,7 +235,7 @@ function Preview() {
             <button
               type="button"
               onClick={() => setIsVipBannerDismissed(true)}
-              className="p-1 text-brand-navy-300 hover:text-white rounded-lg transition-colors"
+              className="p-1.5 text-brand-navy-200 hover:text-white rounded-lg transition-colors"
               title="Dismiss banner"
             >
               <FiX className="w-4 h-4" />

@@ -32,24 +32,24 @@ export default function FooterActions({
       {/* ========================================================
           1. DESKTOP / TABLET ACTIONS TOOLBAR (In-Flow Container)
           ======================================================== */}
-      <div className="hidden sm:flex mt-8 justify-between items-center bg-brand-surface border border-brand-gray-200 rounded-xl p-4 no-print quotation-card-group shadow-sm w-full max-w-[800px] mx-auto">
+      <div className="hidden sm:flex mt-6 flex-wrap items-center justify-between gap-3 bg-white border border-brand-gray-200 rounded-2xl p-3.5 sm:p-4 shadow-sm no-print w-full">
         {/* Back to Form */}
         <Link
           to="/"
-          className="flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-brand-muted hover:text-brand-primary transition-colors py-2 px-3 hover:bg-brand-gray-100 rounded-lg shrink-0"
+          className="inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-brand-muted hover:text-brand-primary transition-colors py-2 px-3 hover:bg-brand-gray-100 rounded-xl shrink-0"
         >
           <FiArrowLeft className="w-4 h-4" />
           <span>Back to Form</span>
         </Link>
 
-        {/* Desktop Buttons Cluster */}
-        <div className="flex items-center space-x-2">
+        {/* Desktop Buttons Cluster - Smart Flex with gap-2 (Never overflows!) */}
+        <div className="flex flex-wrap items-center gap-2">
           {/* VIP Cashback Card Trigger */}
           {isInvoice && onOpenCashback && (
             <button
               type="button"
               onClick={onOpenCashback}
-              className="flex items-center space-x-1.5 bg-gradient-to-r from-brand-accent/20 to-brand-accent/30 hover:from-brand-accent/30 hover:to-brand-accent/40 text-brand-navy-950 border border-brand-accent rounded-lg py-2 px-3 text-xs font-extrabold uppercase tracking-wider transition-all shadow-2xs shrink-0"
+              className="inline-flex items-center space-x-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl py-2 px-3 text-xs font-black uppercase tracking-wider transition-all shadow-xs active:scale-95"
               title="Generate VIP Loyalty Cashback Pass"
             >
               <FaCrown className="w-3.5 h-3.5 text-amber-500" />
@@ -62,7 +62,7 @@ export default function FooterActions({
             <button
               type="button"
               onClick={handleCopyCaptionClick}
-              className="flex items-center space-x-1.5 bg-white border border-brand-gray-300 hover:border-brand-primary text-brand-primary text-xs font-bold uppercase tracking-wider py-2 px-3 rounded-lg hover:bg-brand-gray-50 transition-all shadow-2xs shrink-0"
+              className="inline-flex items-center space-x-1.5 bg-white border border-brand-gray-300 hover:border-brand-primary text-brand-navy-900 text-xs font-bold uppercase tracking-wider py-2 px-3 rounded-xl hover:bg-brand-gray-50 transition-all shadow-xs active:scale-95"
               title="Copy message caption to clipboard"
             >
               {captionCopied ? (
@@ -84,7 +84,7 @@ export default function FooterActions({
             type="button"
             onClick={handlePrint}
             disabled={isGeneratingPdf}
-            className="flex items-center space-x-1.5 bg-white border border-brand-gray-300 text-brand-navy-900 text-xs font-bold uppercase tracking-wider py-2 px-3 rounded-lg hover:bg-brand-gray-100 transition-all shadow-2xs shrink-0 disabled:opacity-50"
+            className="inline-flex items-center space-x-1.5 bg-white border border-brand-gray-300 hover:border-brand-gray-400 text-brand-navy-900 text-xs font-bold uppercase tracking-wider py-2 px-3 rounded-xl hover:bg-brand-gray-50 transition-all shadow-xs active:scale-95 disabled:opacity-50"
             title="Open browser print"
           >
             <FiPrinter className="w-3.5 h-3.5" />
@@ -96,7 +96,7 @@ export default function FooterActions({
             type="button"
             onClick={onDownloadPdf}
             disabled={isGeneratingPdf}
-            className="flex items-center space-x-1.5 bg-brand-primary hover:bg-brand-primary/90 text-white text-xs font-bold uppercase tracking-wider py-2 px-3.5 rounded-lg transition-all shadow-2xs shrink-0 disabled:opacity-50"
+            className="inline-flex items-center space-x-1.5 bg-brand-primary hover:bg-brand-navy-900 text-white text-xs font-bold uppercase tracking-wider py-2 px-3.5 rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50"
           >
             <FiDownload className="w-4 h-4 text-brand-accent" />
             <span>{isGeneratingPdf ? "Creating..." : "Download PDF"}</span>
@@ -107,7 +107,7 @@ export default function FooterActions({
             type="button"
             onClick={onShareWhatsapp}
             disabled={isGeneratingPdf}
-            className="flex items-center space-x-1.5 bg-brand-green hover:bg-brand-green-hover text-white text-xs font-bold uppercase tracking-wider py-2 px-4 rounded-lg transition-all shadow-sm shadow-brand-green/20 shrink-0 disabled:opacity-50"
+            className="inline-flex items-center space-x-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-black uppercase tracking-wider py-2 px-4 rounded-xl transition-all shadow-sm shadow-green-600/20 active:scale-95 disabled:opacity-50"
             title="Share via WhatsApp"
           >
             <FaWhatsapp className="w-4 h-4" />
@@ -119,7 +119,7 @@ export default function FooterActions({
             type="button"
             onClick={onReset}
             disabled={isGeneratingPdf}
-            className="flex items-center space-x-1 bg-brand-yellow hover:bg-brand-yellow-hover text-brand-navy-900 text-xs font-bold uppercase tracking-wider py-2 px-3 rounded-lg transition-all shadow-2xs shrink-0 disabled:opacity-50"
+            className="inline-flex items-center space-x-1 bg-brand-accent hover:bg-yellow-400 text-brand-navy-900 text-xs font-black uppercase tracking-wider py-2 px-3 rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50"
             title="Create New Document"
           >
             <FiPlusCircle className="w-3.5 h-3.5" />

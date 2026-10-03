@@ -29,6 +29,7 @@ export default {
             700: "#334e68",
             800: "#1e3a8a",
             900: "#102a43",
+            950: "#0a192f",
           },
           yellow: {
             DEFAULT: "#fbbf24",

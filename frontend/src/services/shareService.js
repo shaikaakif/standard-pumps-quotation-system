@@ -1,9 +1,8 @@
 import toast from "react-hot-toast";
 
 /**
- * Service to manage professional quotation and invoice sharing behaviors,
- * optimizing separately for mobile (Web Share API / Native) and
- * desktop (WhatsApp Web / Clipboard Copy fallbacks).
+ * Service to manage professional quotation, invoice, and cashback sharing behaviors,
+ * optimizing for mobile (Web Share API / Native) and desktop (WhatsApp Desktop App / Web).
  */
 export const shareService = {
   // ==========================================
@@ -13,8 +12,9 @@ export const shareService = {
   /**
    * Builds the premium pre-filled WhatsApp text when a quotation PDF is attached.
    */
-  formatAttachmentText() {
-    return `Assalamu Alaikum.\n\nPlease find your quotation from Standard Pumps & Borewell attached.\n\nFor any assistance please contact us.\n\nStandard Pumps & Borewell\n📞 9110704747`;
+  formatAttachmentText(quotation) {
+    const cust = quotation?.customer_name ? ` for ${quotation.customer_name}` : "";
+    return `Assalamu Alaikum.\n\nPlease find your quotation${cust} from Standard Pumps & Borewell attached.\n\nFor any assistance please contact us.\n\nStandard Pumps & Borewell\n📞 9110704747 / 9581472786`;
   },
 
   /**
@@ -64,7 +64,7 @@ export const shareService = {
 ----------------------------------------
 _Thank you for your business!_
 📞 *Contact Shop:* +91 9110704747 , +91 9581472786
-📍 *Address:* PILLAR NO 101,ATTAPUR, RINGROAD ,HYDERABAD,TELANGANA 500048`;
+📍 *Address:* Pillar No 101, Attapur, Ring Road, Hyderabad - 500048`;
   },
 
   // ==========================================
@@ -76,7 +76,7 @@ _Thank you for your business!_
    */
   formatInvoiceAttachmentText(invoice) {
     const invNo = invoice?.invoice_number || "Invoice";
-    return `Assalamu Alaikum.\n\nPlease find your Bill/Invoice (${invNo}) from Standard Pumps & Borewell attached.\n\nFor any query or assistance, please contact us.\n\nStandard Pumps & Borewell\n📞 9110704747`;
+    return `Assalamu Alaikum.\n\nPlease find your Bill/Invoice (${invNo}) from Standard Pumps & Borewell attached.\n\nFor any query or assistance, please contact us.\n\nStandard Pumps & Borewell\n📞 9110704747 / 9581472786`;
   },
 
   /**
@@ -124,6 +124,53 @@ _Thank you for your business!_
   },
 
   // ==========================================
+  // CASHBACK VIP PASS FORMATTERS
+  // ==========================================
+
+  /**
+   * Builds the VIP Cashback Card WhatsApp text.
+   */
+  formatCashbackShareText(cashback) {
+    if (!cashback) return "";
+    const {
+      voucher_code,
+      customer_name,
+      phone,
+      cashback_amount,
+      expiry_date,
+      linked_invoice
+    } = cashback;
+
+    const amountFormatted = Number(cashback_amount || 0).toLocaleString("en-IN");
+
+    return `🎁 *STANDARD PUMPS & BOREWELL*
+----------------------------------------
+*EXCLUSIVE VIP CASHBACK & SERVICE PRIVILEGE PASS*
+
+👤 *Customer:* ${customer_name}
+📞 *Registered Mobile:* ${phone}
+🎟️ *Voucher Serial:* ${voucher_code}
+💰 *Cashback Amount:* ₹${amountFormatted}
+📅 *Valid Until:* ${expiry_date}
+🧾 *Linked Invoice:* #${linked_invoice}
+
+⭐ *EXCLUSIVE VIP BENEFIT INCLUDED:*
+• *1-Year Free On-Ground Service Guarantee*
+  (Free 1-time on-site inspection & minor troubleshooting check for your borewell pump)
+
+🛡️ *Anti-Fraud & Redemption Terms:*
+1. Valid for single one-time redemption on your next purchase or repair service at Standard Pumps.
+2. Strictly locked to your registered mobile number (+91 ${phone}).
+3. Present this digital card / voucher code at the shop counter to redeem.
+4. Non-transferable and non-convertible to physical cash.
+
+----------------------------------------
+_Thank you for choosing Standard Pumps & Borewell!_
+📞 *Shop Contact:* +91 9110704747 , +91 9581472786
+📍 *Address:* Pillar No 101, Attapur, Ring Road, Hyderabad - 500048`;
+  },
+
+  // ==========================================
   // SHARING HANDLERS
   // ==========================================
 
@@ -132,12 +179,13 @@ _Thank you for your business!_
    */
   async shareQuotation(quotation, { mode = "all", pdfFile = null } = {}) {
     const fallbackText = this.formatShareText(quotation);
-    const attachmentText = this.formatAttachmentText();
+    const attachmentText = this.formatAttachmentText(quotation);
     const textToShare = pdfFile ? attachmentText : fallbackText;
 
     await this._dispatchShare({
       title: "Standard Pumps Quotation",
       textToShare,
+      phone: quotation?.phone,
       mode,
       pdfFile,
       successMsg: "Quotation shared successfully!"
@@ -155,6 +203,7 @@ _Thank you for your business!_
     await this._dispatchShare({
       title: `Standard Pumps Invoice #${invoice?.invoice_number || ""}`,
       textToShare,
+      phone: invoice?.phone,
       mode,
       pdfFile,
       successMsg: "Invoice shared successfully!"
@@ -162,10 +211,36 @@ _Thank you for your business!_
   },
 
   /**
+   * Shares a cashback card dynamically.
+   */
+  async shareCashbackCard(cashback, { mode = "all", pdfFile = null } = {}) {
+    const textToShare = this.formatCashbackShareText(cashback);
+
+    await this._dispatchShare({
+      title: `Standard Pumps Cashback Pass - ${cashback?.voucher_code || ""}`,
+      textToShare,
+      phone: cashback?.phone,
+      mode,
+      pdfFile,
+      successMsg: "Cashback card shared successfully!"
+    });
+  },
+
+  /**
+   * Normalizes an Indian phone number to 10 digits or E.164.
+   */
+  cleanPhoneNumber(rawPhone) {
+    if (!rawPhone) return "";
+    const digits = String(rawPhone).replace(/\D/g, "");
+    return digits.length > 10 ? digits.slice(-10) : digits;
+  },
+
+  /**
    * Internal common dispatch logic for Web Share & WhatsApp deep-linking.
+   * Supports both Windows Laptop WhatsApp application and mobile intent.
    * @private
    */
-  async _dispatchShare({ title, textToShare, mode = "all", pdfFile = null, successMsg }) {
+  async _dispatchShare({ title, textToShare, phone, mode = "all", pdfFile = null, successMsg }) {
     if (!textToShare) {
       toast.error("Invalid document context for sharing.");
       return;
@@ -175,8 +250,11 @@ _Thank you for your business!_
       navigator.userAgent
     );
 
+    const cleanPhone = this.cleanPhoneNumber(phone);
+    const phoneParam = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+
     // 1. Mobile Native Web Share API (with or without File)
-    if (isMobile && navigator.share) {
+    if (isMobile && mode === "all" && navigator.share) {
       try {
         const shareData = {
           title,
@@ -202,6 +280,9 @@ _Thank you for your business!_
     if (mode === "whatsapp" || isMobile) {
       const encodedText = encodeURIComponent(textToShare);
       
+      // Auto-copy the caption to clipboard so the user has it ready regardless
+      this.copyToClipboard(textToShare, false);
+
       // If we have a PDF, trigger a forced physical download so it's in the device's "Recent Downloads".
       if (pdfFile) {
         try {
@@ -220,28 +301,39 @@ _Thank you for your business!_
         }
       }
 
-      const whatsappUrl = isMobile
-        ? `whatsapp://send?text=${encodedText}`
-        : `https://web.whatsapp.com/send?text=${encodedText}`;
+      // Universal WhatsApp Deep-Link:
+      // On Windows/Mac Desktop, api.whatsapp.com prompts "Open WhatsApp?" app dialog if installed,
+      // and opens directly to the customer's phone number!
+      let whatsappUrl = "";
+      if (phoneParam) {
+        // Direct link to customer's chat with prefilled text
+        whatsappUrl = isMobile
+          ? `whatsapp://send?phone=${phoneParam}&text=${encodedText}`
+          : `https://api.whatsapp.com/send?phone=${phoneParam}&text=${encodedText}`;
+      } else {
+        // Fallback without phone number
+        whatsappUrl = isMobile
+          ? `whatsapp://send?text=${encodedText}`
+          : `https://api.whatsapp.com/send?text=${encodedText}`;
+      }
 
       try {
         window.open(whatsappUrl, "_blank", "noopener,noreferrer");
       } catch (err) {
         console.error("Could not launch WhatsApp:", err);
-        this.copyToClipboard(textToShare);
+        this.copyToClipboard(textToShare, true);
       }
       return;
     }
 
     // 3. Fallback: Copy to Clipboard
-    this.copyToClipboard(textToShare);
+    this.copyToClipboard(textToShare, true);
   },
 
   /**
-   * Copies the formatted quotation text directly to the clipboard
-   * and displays a beautiful success toast.
+   * Copies formatted text to clipboard with optional toast.
    */
-  copyToClipboard(text) {
+  copyToClipboard(text, showToast = true) {
     if (!navigator.clipboard) {
       const textArea = document.createElement("textarea");
       textArea.value = text;
@@ -251,9 +343,9 @@ _Thank you for your business!_
       textArea.select();
       try {
         document.execCommand("copy");
-        toast.success("Document text copied to clipboard!");
+        if (showToast) toast.success("WhatsApp Caption copied to clipboard! 📋");
       } catch (err) {
-        toast.error("Failed to copy document text.");
+        if (showToast) toast.error("Failed to copy caption text.");
       }
       document.body.removeChild(textArea);
       return;
@@ -262,12 +354,33 @@ _Thank you for your business!_
     navigator.clipboard
       .writeText(text)
       .then(() => {
-        toast.success("Document text copied to clipboard!");
+        if (showToast) toast.success("WhatsApp Caption copied to clipboard! 📋");
       })
       .catch((err) => {
         console.error("Clipboard write failure:", err);
-        toast.error("Failed to copy document text.");
+        if (showToast) toast.error("Failed to copy caption text.");
       });
+  },
+
+  /**
+   * Dedicated helper to copy customer's phone number to clipboard.
+   */
+  copyPhoneNumber(rawPhone) {
+    const clean = this.cleanPhoneNumber(rawPhone);
+    if (!clean) {
+      toast.error("No phone number found.");
+      return;
+    }
+
+    const formatted = clean.length === 10 ? clean : rawPhone;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(formatted).then(() => {
+        toast.success(`Copied Phone: ${formatted} 📞`);
+      });
+    } else {
+      this.copyToClipboard(formatted, false);
+      toast.success(`Copied Phone: ${formatted} 📞`);
+    }
   }
 };
 

@@ -1,5 +1,6 @@
 import React from "react";
-import { FiUser, FiPhone, FiCompass, FiShield, FiZap } from "react-icons/fi";
+import { FiUser, FiPhone, FiCompass, FiShield, FiZap, FiCopy } from "react-icons/fi";
+import { shareService } from "../../services/shareService";
 
 function CustomerDetails({ customerName, phone, feet, mode, phase }) {
   return (
@@ -27,7 +28,17 @@ function CustomerDetails({ customerName, phone, feet, mode, phase }) {
           </div>
           <div>
             <div className="text-[10px] text-brand-gray-400 font-bold uppercase tracking-wider">Phone</div>
-            <div className="text-sm font-bold text-brand-navy-900 leading-tight mt-0.5">{phone}</div>
+            <div className="flex items-center space-x-1.5 mt-0.5">
+              <span className="text-sm font-bold text-brand-navy-900 leading-tight">{phone}</span>
+              <button
+                type="button"
+                onClick={() => shareService.copyPhoneNumber(phone)}
+                className="text-brand-primary hover:text-brand-secondary p-0.5 rounded hover:bg-brand-gray-200 transition-colors no-print"
+                title="Copy mobile number"
+              >
+                <FiCopy className="w-3.5 h-3.5 inline text-brand-secondary" />
+              </button>
+            </div>
           </div>
         </div>
 

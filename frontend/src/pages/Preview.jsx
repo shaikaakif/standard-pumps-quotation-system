@@ -19,7 +19,9 @@ import FooterActions from "../components/quotation/FooterActions";
 import LoadingOverlay from "../components/system/LoadingOverlay";
 import WatermarkBackground from "../components/quotation/WatermarkBackground";
 import InvoiceDocument from "../components/invoice/InvoiceDocument";
-import { FiAlertCircle, FiArrowLeft } from "react-icons/fi";
+import CashbackModal from "../components/cashback/CashbackModal";
+import { FiAlertCircle, FiArrowLeft, FiGift } from "react-icons/fi";
+import { FaCrown } from "react-icons/fa";
 
 function Preview() {
   const navigate = useNavigate();
@@ -36,6 +38,7 @@ function Preview() {
   const { settings } = useSettings();
   
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isCashbackModalOpen, setIsCashbackModalOpen] = useState(false);
   const pdfLoader = useLoadingSteps("pdf", 2500);
 
   const isInvoice = activeDocType === "INVOICE" && Boolean(invoiceData);
@@ -159,6 +162,16 @@ function Preview() {
     }
   };
 
+  const handleCopyCaption = () => {
+    if (isInvoice) {
+      const text = shareService.formatInvoiceShareText(invoiceData);
+      shareService.copyToClipboard(text, true);
+    } else {
+      const text = shareService.formatShareText(quotationResponse);
+      shareService.copyToClipboard(text, true);
+    }
+  };
+
   // 1. Graceful empty-state handling if loaded without context
   if (!hasActiveDocument) {
     return (
@@ -187,7 +200,38 @@ function Preview() {
 
   return (
     <div className={`w-full py-4 sm:py-8 relative ${isGeneratingPdf ? "pointer-events-none select-none" : ""}`}>
-      {/* 2. Document Presentation Container */}
+      
+      {/* 2. Top Promotional Banner for Invoices: Lenskart Cashback Pass */}
+      {isInvoice && (
+        <div className="max-w-[800px] mx-auto mb-4 bg-gradient-to-r from-brand-primary via-brand-navy-900 to-brand-primary text-white p-3.5 sm:p-4 rounded-xl border border-brand-accent/40 shadow-md flex flex-col sm:flex-row items-center justify-between gap-3 no-print">
+          <div className="flex items-center space-x-3 text-left">
+            <div className="w-10 h-10 rounded-xl bg-brand-accent/20 text-brand-accent flex items-center justify-center border border-brand-accent/30 shrink-0 shadow-inner">
+              <FaCrown className="w-5 h-5 text-brand-accent" />
+            </div>
+            <div>
+              <h4 className="text-xs sm:text-sm font-black uppercase tracking-wide flex items-center gap-1.5">
+                <span>VIP Cashback & Loyalty Pass</span>
+                <span className="text-[9px] bg-brand-accent text-brand-navy-950 font-black px-1.5 py-0.5 rounded-full uppercase">
+                  Lenskart Model
+                </span>
+              </h4>
+              <p className="text-[11px] text-brand-navy-200 mt-0.5">
+                Lock in repeat business: 10% Cashback + 1-Year Free On-Ground Service guarantee!
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsCashbackModalOpen(true)}
+            className="w-full sm:w-auto flex items-center justify-center space-x-1.5 bg-brand-accent hover:bg-brand-accent/90 text-brand-navy-950 font-black px-4 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-all shadow-md shrink-0"
+          >
+            <FiGift className="w-4 h-4" />
+            <span>Generate Cashback Card</span>
+          </button>
+        </div>
+      )}
+
+      {/* 3. Document Presentation Container */}
       {isInvoice ? (
         // Virtual Invoice View (1-Page)
         <InvoiceDocument invoice={invoiceData} />
@@ -236,8 +280,20 @@ function Preview() {
         onDownloadPdf={handleDownloadPdf}
         onShareWhatsapp={handleShareWhatsapp}
         onShare={handleShare}
+        onCopyCaption={handleCopyCaption}
+        onOpenCashback={() => setIsCashbackModalOpen(true)}
+        isInvoice={isInvoice}
         isGeneratingPdf={isGeneratingPdf}
       />
+
+      {/* 4. VIP Cashback Modal */}
+      {isInvoice && (
+        <CashbackModal
+          invoice={invoiceData}
+          isOpen={isCashbackModalOpen}
+          onClose={() => setIsCashbackModalOpen(false)}
+        />
+      )}
 
       {isGeneratingPdf && (
         <LoadingOverlay 

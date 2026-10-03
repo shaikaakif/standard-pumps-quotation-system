@@ -1,7 +1,8 @@
 import React from "react";
-import { FiPhone, FiMapPin, FiCalendar, FiHash, FiCreditCard } from "react-icons/fi";
+import { FiPhone, FiMapPin, FiCalendar, FiHash, FiCreditCard, FiCopy } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import { useSettings } from "../../hooks/useSettings";
+import { shareService } from "../../services/shareService";
 import WatermarkBackground from "../quotation/WatermarkBackground";
 
 /**
@@ -107,7 +108,17 @@ export default function InvoiceDocument({ invoice }) {
         <div className="flex items-center space-x-4 text-brand-muted">
           <div>
             <span className="text-[9px] uppercase tracking-widest font-bold block">Contact</span>
-            <span className="font-mono font-semibold text-brand-text">+91 {phone}</span>
+            <div className="flex items-center space-x-1.5">
+              <span className="font-mono font-semibold text-brand-text">+91 {phone}</span>
+              <button
+                type="button"
+                onClick={() => shareService.copyPhoneNumber(phone)}
+                className="text-[10px] text-brand-primary hover:text-brand-secondary p-0.5 rounded hover:bg-brand-gray-200 transition-colors no-print"
+                title="Copy mobile number"
+              >
+                <FiCopy className="w-3 h-3 inline text-brand-secondary" />
+              </button>
+            </div>
           </div>
           <div>
             <span className="text-[9px] uppercase tracking-widest font-bold block">Place of Supply</span>

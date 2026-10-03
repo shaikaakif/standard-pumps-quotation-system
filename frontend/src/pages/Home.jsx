@@ -2,16 +2,44 @@ import React from "react";
 import CustomerForm from "../components/forms/CustomerForm";
 import InvoiceForm from "../components/invoice/InvoiceForm";
 import { useQuotation } from "../context/QuotationContext";
-import { FiPlusCircle, FiFileText, FiCheck } from "react-icons/fi";
+import useInstallPrompt from "../hooks/useInstallPrompt";
+import { FiPlusCircle, FiFileText, FiCheck, FiDownload } from "react-icons/fi";
 import { FaReceipt } from "react-icons/fa";
 
 function Home() {
   const { activeTab, setActiveTab } = useQuotation();
+  const { isInstalled, promptInstall } = useInstallPrompt();
 
   return (
-    <div className="max-w-2xl mx-auto my-4 sm:my-6 px-4">
+    <div className="max-w-2xl mx-auto my-3 sm:my-6 px-1 sm:px-4">
+      {/* 0. Mobile-first App Install Banner (Visible on mobile if not installed) */}
+      {!isInstalled && (
+        <div className="sm:hidden mb-3 bg-gradient-to-r from-brand-primary via-brand-navy-900 to-brand-primary text-white p-2.5 rounded-xl border border-brand-accent/40 shadow-sm flex items-center justify-between gap-2.5">
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-brand-accent/20 text-brand-accent flex items-center justify-center shrink-0">
+              <FiDownload className="w-4 h-4" />
+            </div>
+            <div className="min-w-0 truncate">
+              <span className="text-xs font-black uppercase tracking-wider block truncate">
+                Install Mobile App
+              </span>
+              <span className="text-[10px] text-brand-navy-200 block truncate">
+                Tap to install on home screen
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={promptInstall}
+            className="bg-brand-accent hover:bg-yellow-400 text-brand-navy-950 font-black text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-lg shrink-0 shadow-sm active:scale-95 transition-all"
+          >
+            Install
+          </button>
+        </div>
+      )}
+
       {/* 1. Sleek Modern Tab Switcher: Quotation vs Virtual Invoice */}
-      <div className="bg-white/80 backdrop-blur p-1.5 rounded-2xl mb-5 shadow-sm border border-brand-gray-200 flex items-center justify-between gap-1.5">
+      <div className="bg-white/80 backdrop-blur p-1.5 rounded-2xl mb-4 sm:mb-5 shadow-sm border border-brand-gray-200 flex items-center justify-between gap-1.5">
         <button
           type="button"
           onClick={() => setActiveTab("quotation")}

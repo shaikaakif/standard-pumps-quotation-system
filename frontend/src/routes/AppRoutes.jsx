@@ -19,7 +19,14 @@ const Settings = lazy(() => import("../pages/Settings"));
 function AppRoutes() {
   // PWA connectivity hooks
   const { isOnline, isBackendAvailable } = useOnlineStatus();
-  const { canShowPrompt, promptInstall, dismissPrompt, isInstalled, isIOSSafari } = useInstallPrompt();
+  const { 
+    isInstalled, 
+    promptInstall, 
+    showGuide, 
+    closeGuide, 
+    isIOS, 
+    isAndroid 
+  } = useInstallPrompt();
 
   return (
     <div className="flex flex-col min-h-screen bg-brand-gray-100 text-brand-navy-900 font-sans">
@@ -51,15 +58,15 @@ function AppRoutes() {
 
       <BottomNav />
 
-      {/* PWA Install Prompt (bottom-anchored) */}
-      {!isInstalled && (
-        <InstallPrompt
-          canShowPrompt={canShowPrompt}
-          promptInstall={promptInstall}
-          dismissPrompt={dismissPrompt}
-          isIOSSafari={isIOSSafari}
-        />
-      )}
+      {/* PWA Install Prompt & Guided Installation */}
+      <InstallPrompt
+        isInstalled={isInstalled}
+        promptInstall={promptInstall}
+        showGuide={showGuide}
+        closeGuide={closeGuide}
+        isIOS={isIOS}
+        isAndroid={isAndroid}
+      />
 
       {/* Service Worker Update Notification */}
       <UpdateNotification

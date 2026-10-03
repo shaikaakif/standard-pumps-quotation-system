@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FiX,
@@ -9,16 +9,31 @@ import {
   FiAward,
   FiCalendar,
   FiArrowRight,
-  FiExternalLink
+  FiExternalLink,
+  FiTrash2
 } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { useQuotation } from "../../context/QuotationContext";
+import customerService from "../../services/customerService";
 
-export default function CustomerDossierModal({ customer, isOpen, onClose }) {
+export default function CustomerDossierModal({
+  customer: initialCustomer,
+  isOpen,
+  onClose,
+  onCustomerDeleted,
+  onCustomerUpdated,
+}) {
   const navigate = useNavigate();
   const { saveInvoice, saveQuotation, setIsNewQuotation, setActiveDocType } = useQuotation();
   const [activeTab, setActiveTab] = useState("items"); // 'items' | 'invoices' | 'quotations'
+  const [customer, setCustomer] = useState(initialCustomer);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmDeleteTarget, setConfirmDeleteTarget] = useState(null); // { type: 'customer' | 'invoice' | 'quotation', data: ... }
+
+  useEffect(() => {
+    setCustomer(initialCustomer);
+  }, [initialCustomer]);
 
   if (!isOpen || !customer) return null;
 
@@ -62,6 +77,89 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
     toast.success("Opened Quotation");
     onClose();
     navigate("/preview");
+  };
+
+  const handleDeleteProfile = async () => {
+    if (!customer) return;
+    setIsDeleting(true);
+    try {
+      await customerService.deleteCustomer(customer);
+      toast.success(`Deleted customer profile: ${customer.name}`);
+      onCustomerDeleted?.(customer);
+      onClose();
+    } catch (e) {
+      console.error("Delete customer profile error:", e);
+      toast.error("Failed to delete customer profile.");
+    } finally {
+      setIsDeleting(false);
+      setConfirmDeleteTarget(null);
+    }
+  };
+
+  const handleDeleteInvoice = async (inv) => {
+    setIsDeleting(true);
+    try {
+      const invId = inv.invoice_number || inv.invoice_id || inv.id;
+      await customerService.deleteInvoice(invId);
+      toast.success(`Deleted Invoice #${inv.invoice_number || invId}`);
+
+      // Update local state in modal
+      setCustomer((prev) => {
+        if (!prev) return prev;
+        const newInvoices = (prev.invoices || []).filter(
+          (i) => i.invoice_number !== inv.invoice_number && i.invoice_id !== inv.invoice_id
+        );
+        const invTotal = parseFloat(inv.grand_total) || 0;
+        const newSpend = Math.max(0, (prev.totalSpend || 0) - invTotal);
+        const newItems = (prev.itemsBought || []).filter(
+          (item) => item.invoiceNumber !== inv.invoice_number
+        );
+        return {
+          ...prev,
+          invoices: newInvoices,
+          totalSpend: newSpend,
+          itemsBought: newItems,
+          tier: newInvoices.length > 0 ? prev.tier : (prev.quotations?.length > 0 ? "Lead" : "Lead"),
+        };
+      });
+
+      onCustomerUpdated?.();
+    } catch (e) {
+      console.error("Delete invoice error:", e);
+      toast.error("Failed to delete invoice.");
+    } finally {
+      setIsDeleting(false);
+      setConfirmDeleteTarget(null);
+    }
+  };
+
+  const handleDeleteQuotation = async (q) => {
+    setIsDeleting(true);
+    try {
+      const qId = q.quotation_id || q.id;
+      await customerService.deleteQuotation(qId);
+      toast.success(`Deleted Quotation (${q.feet} FT)`);
+
+      // Update local state in modal
+      setCustomer((prev) => {
+        if (!prev) return prev;
+        const newQuotes = (prev.quotations || []).filter(
+          (item) => item.quotation_id !== q.quotation_id && item.id !== q.id
+        );
+        return {
+          ...prev,
+          quotations: newQuotes,
+        };
+      });
+
+      onCustomerUpdated?.();
+    } catch (e) {
+      console.error("Delete quotation error:", e);
+      toast.error("Failed to delete quotation.");
+    } finally {
+      setIsDeleting(false);
+      setConfirmDeleteTarget(null);
+    }
   };
 
   // Get initials for avatar
@@ -108,7 +206,7 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-brand-navy-900/60 backdrop-blur-sm animate-fade-in">
       <div 
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden border border-brand-gray-300"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden border border-brand-gray-300 relative"
         role="dialog"
         aria-modal="true"
       >
@@ -162,6 +260,15 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
                   <FiCopy className="w-3.5 h-3.5" />
                   <span>Copy No.</span>
                 </button>
+
+                <button
+                  onClick={() => setConfirmDeleteTarget({ type: "customer", data: customer })}
+                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-600 text-red-200 hover:text-white text-xs font-bold transition-colors border border-red-500/30"
+                  title="Delete Customer Profile"
+                >
+                  <FiTrash2 className="w-3.5 h-3.5" />
+                  <span>Delete Profile</span>
+                </button>
               </div>
             </div>
           </div>
@@ -181,7 +288,7 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
                 Invoices
               </span>
               <span className="text-sm sm:text-base font-black text-white">
-                {customer.invoices.length} Orders
+                {customer.invoices?.length || 0} Orders
               </span>
             </div>
             <div className="bg-white/10 rounded-xl p-2.5">
@@ -189,7 +296,7 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
                 Quotations
               </span>
               <span className="text-sm sm:text-base font-black text-white">
-                {customer.quotations.length} Estimates
+                {customer.quotations?.length || 0} Estimates
               </span>
             </div>
           </div>
@@ -206,7 +313,7 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
             }`}
           >
             <FiShoppingBag className="w-4 h-4" />
-            <span>Items Bought ({customer.itemsBought.length})</span>
+            <span>Items Bought ({customer.itemsBought?.length || 0})</span>
           </button>
 
           <button
@@ -218,7 +325,7 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
             }`}
           >
             <FiFileText className="w-4 h-4" />
-            <span>Invoices ({customer.invoices.length})</span>
+            <span>Invoices ({customer.invoices?.length || 0})</span>
           </button>
 
           <button
@@ -230,7 +337,7 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
             }`}
           >
             <FiCalendar className="w-4 h-4" />
-            <span>Quotes ({customer.quotations.length})</span>
+            <span>Quotes ({customer.quotations?.length || 0})</span>
           </button>
         </div>
 
@@ -239,7 +346,7 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
           {/* TAB 1: ITEMS BOUGHT */}
           {activeTab === "items" && (
             <div>
-              {customer.itemsBought.length === 0 ? (
+              {!customer.itemsBought || customer.itemsBought.length === 0 ? (
                 <div className="text-center py-10 bg-white rounded-xl border border-brand-gray-200 p-6">
                   <FiShoppingBag className="w-10 h-10 mx-auto text-brand-muted/40 mb-2" />
                   <h4 className="font-bold text-brand-navy-800 text-sm">No Invoiced Purchases Yet</h4>
@@ -288,7 +395,7 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
           {/* TAB 2: INVOICES HISTORY */}
           {activeTab === "invoices" && (
             <div className="space-y-3">
-              {customer.invoices.length === 0 ? (
+              {!customer.invoices || customer.invoices.length === 0 ? (
                 <div className="text-center py-10 bg-white rounded-xl border border-brand-gray-200 p-6">
                   <FiFileText className="w-10 h-10 mx-auto text-brand-muted/40 mb-2" />
                   <p className="text-xs text-brand-muted">No invoices generated for this client yet.</p>
@@ -316,12 +423,12 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
                         )}
                       </div>
                       <p className="text-xs text-brand-muted mt-1">
-                        Date: {inv.date || new Date(inv.generated_at).toLocaleDateString("en-IN")} • {inv.items?.length || 0} line items
+                        Date: {inv.date || (inv.generated_at ? new Date(inv.generated_at).toLocaleDateString("en-IN") : "Recent")} • {inv.items?.length || 0} line items
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between sm:justify-end space-x-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-brand-gray-100">
-                      <div className="text-left sm:text-right">
+                    <div className="flex items-center justify-between sm:justify-end space-x-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-brand-gray-100">
+                      <div className="text-left sm:text-right mr-2">
                         <span className="text-[10px] uppercase font-bold text-brand-muted block">Total Paid</span>
                         <span className="text-base font-black text-brand-primary">
                           {formatCurrency(inv.grand_total)}
@@ -334,6 +441,14 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
                         <span>Reopen</span>
                         <FiArrowRight className="w-3.5 h-3.5" />
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDeleteTarget({ type: "invoice", data: inv })}
+                        className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 transition-colors border border-red-200"
+                        title={`Delete Invoice #${inv.invoice_number}`}
+                      >
+                        <FiTrash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 ))
@@ -344,7 +459,7 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
           {/* TAB 3: QUOTATIONS HISTORY */}
           {activeTab === "quotations" && (
             <div className="space-y-3">
-              {customer.quotations.length === 0 ? (
+              {!customer.quotations || customer.quotations.length === 0 ? (
                 <div className="text-center py-10 bg-white rounded-xl border border-brand-gray-200 p-6">
                   <FiCalendar className="w-10 h-10 mx-auto text-brand-muted/40 mb-2" />
                   <p className="text-xs text-brand-muted">No quotations recorded for this client.</p>
@@ -369,8 +484,8 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between sm:justify-end space-x-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-brand-gray-100">
-                      <div className="text-left sm:text-right">
+                    <div className="flex items-center justify-between sm:justify-end space-x-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-brand-gray-100">
+                      <div className="text-left sm:text-right mr-2">
                         <span className="text-[10px] uppercase font-bold text-brand-muted block">Quoted Price</span>
                         <span className="text-base font-black text-brand-primary">
                           {formatCurrency(q.totals?.grand_total || q.grand_total)}
@@ -383,6 +498,14 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
                         <span>Reopen</span>
                         <FiArrowRight className="w-3.5 h-3.5" />
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDeleteTarget({ type: "quotation", data: q })}
+                        className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 transition-colors border border-red-200"
+                        title={`Delete Quotation for ${q.feet} FT`}
+                      >
+                        <FiTrash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                 ))
@@ -393,7 +516,14 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
 
         {/* Modal Footer */}
         <div className="p-4 bg-white border-t border-brand-gray-200 flex justify-between items-center text-xs text-brand-muted">
-          <span>Standard Pumps & Borewells Client Intelligence</span>
+          <button
+            type="button"
+            onClick={() => setConfirmDeleteTarget({ type: "customer", data: customer })}
+            className="inline-flex items-center space-x-1.5 text-red-600 hover:text-red-700 font-bold transition-colors"
+          >
+            <FiTrash2 className="w-3.5 h-3.5" />
+            <span>Delete Customer Profile</span>
+          </button>
           <button
             onClick={onClose}
             className="px-4 py-2 bg-brand-gray-100 hover:bg-brand-gray-200 text-brand-navy-900 font-bold rounded-lg transition-colors"
@@ -401,6 +531,57 @@ export default function CustomerDossierModal({ customer, isOpen, onClose }) {
             Close
           </button>
         </div>
+
+        {/* Inline Confirmation Dialog for Modal */}
+        {confirmDeleteTarget && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-brand-navy-900/60 backdrop-blur-xs animate-fade-in">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-5 border border-brand-gray-200">
+              <div className="flex items-center space-x-3 text-red-600 mb-3">
+                <div className="p-2.5 bg-red-100 rounded-xl">
+                  <FiTrash2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-base font-black text-brand-navy-900">
+                    {confirmDeleteTarget.type === "customer" && "Delete Customer Profile?"}
+                    {confirmDeleteTarget.type === "invoice" && `Delete Invoice #${confirmDeleteTarget.data.invoice_number}?`}
+                    {confirmDeleteTarget.type === "quotation" && `Delete Quotation (${confirmDeleteTarget.data.feet} FT)?`}
+                  </h4>
+                  <p className="text-[11px] text-brand-muted">This action cannot be undone.</p>
+                </div>
+              </div>
+
+              <p className="text-xs text-brand-navy-700 mb-4 bg-brand-gray-50 p-3 rounded-xl border border-brand-gray-200">
+                {confirmDeleteTarget.type === "customer" && `Are you sure you want to permanently delete ${customer.name} and all associated records?`}
+                {confirmDeleteTarget.type === "invoice" && `Are you sure you want to delete Invoice #${confirmDeleteTarget.data.invoice_number} (₹${confirmDeleteTarget.data.grand_total})?`}
+                {confirmDeleteTarget.type === "quotation" && `Are you sure you want to delete the quotation estimate for ${confirmDeleteTarget.data.feet} FT?`}
+              </p>
+
+              <div className="flex items-center justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmDeleteTarget(null)}
+                  disabled={isDeleting}
+                  className="px-3.5 py-1.5 rounded-lg bg-brand-gray-100 hover:bg-brand-gray-200 text-brand-navy-800 text-xs font-bold transition-all disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirmDeleteTarget.type === "customer") handleDeleteProfile();
+                    if (confirmDeleteTarget.type === "invoice") handleDeleteInvoice(confirmDeleteTarget.data);
+                    if (confirmDeleteTarget.type === "quotation") handleDeleteQuotation(confirmDeleteTarget.data);
+                  }}
+                  disabled={isDeleting}
+                  className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-md active:scale-95 disabled:opacity-50"
+                >
+                  <FiTrash2 className="w-3.5 h-3.5" />
+                  <span>{isDeleting ? "Deleting..." : "Delete Permanently"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -353,6 +353,54 @@ class SupabaseService {
       return [];
     }
   }
+
+  /**
+   * Delete customer and their records from Supabase by phone
+   */
+  async deleteCustomer(phone) {
+    if (!this.isConfigured() || !phone) return false;
+    const cleanPhone = String(phone).replace(/\D/g, "").slice(-10);
+    try {
+      await this.client.from("customers").delete().eq("phone", cleanPhone);
+      await this.client.from("quotations").delete().eq("phone", cleanPhone);
+      await this.client.from("invoices").delete().eq("phone", cleanPhone);
+      return true;
+    } catch (e) {
+      console.warn("Failed to delete customer from Supabase:", e);
+      return false;
+    }
+  }
+
+  /**
+   * Delete specific invoice from Supabase
+   */
+  async deleteInvoice(invoiceNumberOrId) {
+    if (!this.isConfigured() || !invoiceNumberOrId) return false;
+    try {
+      await this.client
+        .from("invoices")
+        .delete()
+        .or(`id.eq.${invoiceNumberOrId},invoice_number.eq.${invoiceNumberOrId}`);
+      return true;
+    } catch (e) {
+      console.warn("Failed to delete invoice from Supabase:", e);
+      return false;
+    }
+  }
+
+  /**
+   * Delete specific quotation from Supabase
+   */
+  async deleteQuotation(quotationId) {
+    if (!this.isConfigured() || !quotationId) return false;
+    try {
+      await this.client.from("quotations").delete().eq("id", quotationId);
+      return true;
+    } catch (e) {
+      console.warn("Failed to delete quotation from Supabase:", e);
+      return false;
+    }
+  }
 }
 
 export const supabaseService = new SupabaseService();

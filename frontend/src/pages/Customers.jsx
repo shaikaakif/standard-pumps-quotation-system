@@ -12,7 +12,8 @@ import {
   FiCalendar,
   FiCheckCircle,
   FiArrowRight,
-  FiFilter
+  FiFilter,
+  FiTrash2
 } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import toast from "react-hot-toast";
@@ -26,6 +27,8 @@ export default function Customers() {
   const [activeFilter, setActiveFilter] = useState("all"); // 'all' | 'buyers' | 'leads' | 'vip'
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [isDossierOpen, setIsDossierOpen] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -96,6 +99,26 @@ export default function Customers() {
     }
     customerService.exportToCSV(customers);
     toast.success("Client directory exported to CSV!");
+  };
+
+  const confirmDeleteCustomer = async () => {
+    if (!customerToDelete) return;
+    setIsDeleting(true);
+    try {
+      await customerService.deleteCustomer(customerToDelete);
+      setCustomers((prev) => prev.filter((c) => c.id !== customerToDelete.id));
+      if (selectedCustomer?.id === customerToDelete.id) {
+        setIsDossierOpen(false);
+        setSelectedCustomer(null);
+      }
+      toast.success(`Deleted record for ${customerToDelete.name}`);
+      setCustomerToDelete(null);
+    } catch (err) {
+      console.error("Failed to delete customer:", err);
+      toast.error("Failed to delete customer record.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const formatCurrency = (val) => {
@@ -400,7 +423,7 @@ export default function Customers() {
 
                 {/* Bottom Actions Bar */}
                 <div className="flex items-center justify-between pt-4 mt-4 border-t border-brand-gray-100">
-                  {/* WhatsApp & Call Quick Buttons */}
+                  {/* WhatsApp, Call & Delete Quick Buttons */}
                   <div className="flex items-center space-x-1.5">
                     {hasPhone && (
                       <>
@@ -422,6 +445,17 @@ export default function Customers() {
                         </a>
                       </>
                     )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCustomerToDelete(cust);
+                      }}
+                      className="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 transition-colors border border-red-200"
+                      title={`Delete profile for ${cust.name}`}
+                    >
+                      <FiTrash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
 
                   <button
@@ -443,7 +477,71 @@ export default function Customers() {
         customer={selectedCustomer}
         isOpen={isDossierOpen}
         onClose={() => setIsDossierOpen(false)}
+        onCustomerDeleted={(deletedCust) => {
+          setCustomers((prev) => prev.filter((c) => c.id !== deletedCust.id));
+          setIsDossierOpen(false);
+          setSelectedCustomer(null);
+        }}
+        onCustomerUpdated={() => {
+          loadData();
+        }}
       />
+
+      {/* Delete Customer Confirmation Modal */}
+      {customerToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-navy-900/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border border-brand-gray-200">
+            <div className="flex items-center space-x-3 text-red-600 mb-4">
+              <div className="p-3 bg-red-100 rounded-xl">
+                <FiTrash2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-brand-navy-900">Delete Customer Record?</h3>
+                <p className="text-xs text-brand-muted">This action is permanent and cannot be undone.</p>
+              </div>
+            </div>
+
+            <div className="bg-brand-gray-50 rounded-xl p-3.5 border border-brand-gray-200 text-xs space-y-1.5 mb-5">
+              <div className="flex justify-between">
+                <span className="text-brand-muted font-bold">Client Name:</span>
+                <span className="font-extrabold text-brand-navy-900">{customerToDelete.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-brand-muted font-bold">Phone:</span>
+                <span className="font-mono text-brand-navy-800">{customerToDelete.displayPhone}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-brand-muted font-bold">Invoices:</span>
+                <span className="font-bold text-brand-navy-900">{customerToDelete.invoices?.length || 0} order(s)</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-brand-muted font-bold">Quotations:</span>
+                <span className="font-bold text-brand-navy-900">{customerToDelete.quotations?.length || 0} estimate(s)</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end space-x-2.5">
+              <button
+                type="button"
+                onClick={() => setCustomerToDelete(null)}
+                disabled={isDeleting}
+                className="px-4 py-2 rounded-xl bg-brand-gray-100 hover:bg-brand-gray-200 text-brand-navy-800 text-xs font-bold transition-all disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteCustomer}
+                disabled={isDeleting}
+                className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-md active:scale-95 disabled:opacity-50"
+              >
+                <FiTrash2 className="w-3.5 h-3.5" />
+                <span>{isDeleting ? "Deleting..." : "Delete Permanently"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

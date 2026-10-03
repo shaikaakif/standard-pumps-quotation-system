@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 
 import { useQuotation } from "../context/QuotationContext";
 import apiClient from "../services/api";
+import customerService from "../services/customerService";
 import SearchBar from "../components/history/SearchBar";
 import HistoryCard from "../components/history/HistoryCard";
 
@@ -156,24 +157,25 @@ function History() {
 
   const handleDelete = async (id, isInvoice) => {
     if (isInvoice) {
-      const updated = invoiceItems.filter((inv) => inv.invoice_id !== id);
+      await customerService.deleteInvoice(id);
+      const updated = invoiceItems.filter((inv) => inv.invoice_id !== id && inv.invoice_number !== id);
       setInvoiceItems(updated);
-      try {
-        localStorage.setItem("spqs_invoices", JSON.stringify(updated));
-      } catch (e) {
-        console.warn(e);
-      }
-      toast.success("Invoice deleted from local history.");
+      toast.success("Invoice deleted.");
       return;
     }
 
     try {
-      await apiClient.delete(`/history/${id}`);
-      setQuotationItems((prev) => prev.filter((item) => item.quotation_id !== id));
+      await customerService.deleteQuotation(id);
+      try {
+        await apiClient.delete(`/history/${id}`);
+      } catch (_) {
+        // Soft fail if serverless/offline
+      }
+      setQuotationItems((prev) => prev.filter((item) => item.quotation_id !== id && item.id !== id));
       setTotalCount((prev) => Math.max(0, prev - 1));
       toast.success("Estimate deleted successfully!");
     } catch (err) {
-      console.error("Soft delete failure:", err);
+      console.error("Delete failure:", err);
       toast.error(err.message || "Failed to delete estimate.");
     }
   };

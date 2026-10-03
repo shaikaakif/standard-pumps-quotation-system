@@ -277,6 +277,134 @@ class CustomerService {
     link.click();
     document.body.removeChild(link);
   }
+
+  /**
+   * Delete an entire customer profile and all their associated records
+   * @param {Object} customer - The customer object to delete
+   */
+  async deleteCustomer(customer) {
+    if (!customer) return false;
+    const phoneToMatch = normalizePhone(customer.phone);
+    const rawPhone = customer.phone ? String(customer.phone).trim() : "";
+    const nameToMatch = customer.name ? customer.name.trim().toLowerCase() : "";
+
+    const invIdentifiers = new Set(
+      (customer.invoices || []).map((i) => i.invoice_number || i.invoice_id || i.id).filter(Boolean)
+    );
+    const quoteIdentifiers = new Set(
+      (customer.quotations || []).map((q) => q.quotation_id || q.id).filter(Boolean)
+    );
+
+    // 1. Remove from localStorage invoices
+    try {
+      const storedInv = JSON.parse(localStorage.getItem("spqs_invoices") || "[]");
+      const filteredInv = storedInv.filter((inv) => {
+        if (invIdentifiers.has(inv.invoice_number) || invIdentifiers.has(inv.invoice_id) || invIdentifiers.has(inv.id)) {
+          return false;
+        }
+        const invPhone = normalizePhone(inv.phone);
+        const invRawPhone = inv.phone ? String(inv.phone).trim() : "";
+        const invName = inv.customer_name ? inv.customer_name.trim().toLowerCase() : "";
+        if (phoneToMatch && (invPhone === phoneToMatch || invRawPhone === rawPhone)) return false;
+        if (!phoneToMatch && nameToMatch && invName === nameToMatch) return false;
+        return true;
+      });
+      localStorage.setItem("spqs_invoices", JSON.stringify(filteredInv));
+    } catch (e) {
+      console.warn("Could not delete from local invoices:", e);
+    }
+
+    // 2. Remove from localStorage quotations
+    try {
+      const storedQuotes = JSON.parse(localStorage.getItem("spqs_quotations") || "[]");
+      const filteredQuotes = storedQuotes.filter((q) => {
+        if (quoteIdentifiers.has(q.quotation_id) || quoteIdentifiers.has(q.id)) {
+          return false;
+        }
+        const qPhone = normalizePhone(q.phone);
+        const qRawPhone = q.phone ? String(q.phone).trim() : "";
+        const qName = q.customer_name ? q.customer_name.trim().toLowerCase() : "";
+        if (phoneToMatch && (qPhone === phoneToMatch || qRawPhone === rawPhone)) return false;
+        if (!phoneToMatch && nameToMatch && qName === nameToMatch) return false;
+        return true;
+      });
+      localStorage.setItem("spqs_quotations", JSON.stringify(filteredQuotes));
+    } catch (e) {
+      console.warn("Could not delete from local quotations:", e);
+    }
+
+    // 3. Remove from Supabase if configured
+    if (supabaseService.isConfigured()) {
+      try {
+        if (phoneToMatch) {
+          await supabaseService.deleteCustomer(phoneToMatch);
+        }
+        // Also delete any specific invoices/quotes in Supabase
+        for (const invId of invIdentifiers) {
+          await supabaseService.deleteInvoice(invId);
+        }
+        for (const qId of quoteIdentifiers) {
+          await supabaseService.deleteQuotation(qId);
+        }
+      } catch (e) {
+        console.warn("Failed to delete from Supabase:", e);
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Delete an individual invoice
+   */
+  async deleteInvoice(invoiceNumberOrId) {
+    if (!invoiceNumberOrId) return false;
+
+    try {
+      const storedInv = JSON.parse(localStorage.getItem("spqs_invoices") || "[]");
+      const filteredInv = storedInv.filter(
+        (inv) => inv.invoice_number !== invoiceNumberOrId && inv.invoice_id !== invoiceNumberOrId
+      );
+      localStorage.setItem("spqs_invoices", JSON.stringify(filteredInv));
+    } catch (e) {
+      console.warn("Could not delete local invoice:", e);
+    }
+
+    if (supabaseService.isConfigured()) {
+      try {
+        await supabaseService.deleteInvoice(invoiceNumberOrId);
+      } catch (e) {
+        console.warn("Failed to delete invoice from Supabase:", e);
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Delete an individual quotation
+   */
+  async deleteQuotation(quotationId) {
+    if (!quotationId) return false;
+
+    try {
+      const storedQuotes = JSON.parse(localStorage.getItem("spqs_quotations") || "[]");
+      const filteredQuotes = storedQuotes.filter((q) => q.quotation_id !== quotationId);
+      localStorage.setItem("spqs_quotations", JSON.stringify(filteredQuotes));
+    } catch (e) {
+      console.warn("Could not delete local quotation:", e);
+    }
+
+    if (supabaseService.isConfigured()) {
+      try {
+        await supabaseService.deleteQuotation(quotationId);
+      } catch (e) {
+        console.warn("Failed to delete quotation from Supabase:", e);
+      }
+    }
+
+    return true;
+  }
 }
 
 export const customerService = new CustomerService();

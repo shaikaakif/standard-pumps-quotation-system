@@ -9,6 +9,11 @@
   }
 }
 
+/* Calligraphic Golden Signature Font */
+.font-signature {
+  font-family: 'Great Vibes', cursive, 'Alex Brush';
+}
+
 /* ====================================
    PWA & MOBILE TOUCH OPTIMIZATIONS
    ==================================== */

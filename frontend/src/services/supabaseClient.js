@@ -46,6 +46,12 @@ ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read-write for anon key" ON customers FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public read-write for anon key" ON quotations FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public read-write for anon key" ON invoices FOR ALL USING (true) WITH CHECK (true);
+
+-- Indexes for lightning fast lookups
+CREATE INDEX IF NOT EXISTS idx_customers_phone ON customers(phone);
+CREATE INDEX IF NOT EXISTS idx_quotations_phone ON quotations(phone);
+CREATE INDEX IF NOT EXISTS idx_invoices_phone ON invoices(phone);
+CREATE INDEX IF NOT EXISTS idx_invoices_date ON invoices(date);
 `;
 
 class SupabaseService {
@@ -298,6 +304,46 @@ class SupabaseService {
       return data || [];
     } catch (e) {
       console.warn("Failed to fetch customers from Supabase:", e);
+      return [];
+    }
+  }
+
+  /**
+   * Fetch invoices from Supabase.
+   */
+  async fetchInvoices(limit = 100) {
+    if (!this.isConfigured()) return [];
+    try {
+      const { data, error } = await this.client
+        .from("invoices")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data?.map((row) => row.invoice_data || row) || [];
+    } catch (e) {
+      console.warn("Failed to fetch invoices from Supabase:", e);
+      return [];
+    }
+  }
+
+  /**
+   * Fetch quotations from Supabase.
+   */
+  async fetchQuotations(limit = 100) {
+    if (!this.isConfigured()) return [];
+    try {
+      const { data, error } = await this.client
+        .from("quotations")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      return data?.map((row) => row.quotation_data || row) || [];
+    } catch (e) {
+      console.warn("Failed to fetch quotations from Supabase:", e);
       return [];
     }
   }

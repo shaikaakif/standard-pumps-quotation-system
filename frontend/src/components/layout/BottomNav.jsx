@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { FiFileText, FiClock, FiSettings } from "react-icons/fi";
+import { FiFileText, FiClock, FiSettings, FiUsers } from "react-icons/fi";
 
 function BottomNav() {
   const location = useLocation();
@@ -20,6 +20,11 @@ function BottomNav() {
       <NavLink to="/" className={navLinkClass}>
         <FiFileText className="w-5 h-5" />
         <span className="text-[10px] uppercase tracking-wider">Estimator</span>
+      </NavLink>
+
+      <NavLink to="/customers" className={navLinkClass}>
+        <FiUsers className="w-5 h-5" />
+        <span className="text-[10px] uppercase tracking-wider">Clients</span>
       </NavLink>
 
       <NavLink to="/history" className={navLinkClass}>

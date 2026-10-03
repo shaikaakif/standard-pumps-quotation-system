@@ -14,6 +14,7 @@ import useInstallPrompt from "../hooks/useInstallPrompt";
 const Home = lazy(() => import("../pages/Home"));
 const Preview = lazy(() => import("../pages/Preview"));
 const History = lazy(() => import("../pages/History"));
+const Customers = lazy(() => import("../pages/Customers"));
 const Settings = lazy(() => import("../pages/Settings"));
 
 function AppRoutes() {
@@ -43,6 +44,7 @@ function AppRoutes() {
             <Route path="/" element={<Home />} />
             <Route path="/preview" element={<Preview />} />
             <Route path="/history" element={<History />} />
+            <Route path="/customers" element={<Customers />} />
             <Route path="/settings" element={<Settings />} />
 
             {/* Catch-all redirect to Home */}

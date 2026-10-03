@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { FiFileText, FiClock, FiSettings, FiWifi, FiWifiOff, FiServer } from "react-icons/fi";
+import { FiFileText, FiClock, FiSettings, FiUsers, FiWifi, FiWifiOff, FiServer } from "react-icons/fi";
 import { APP_VERSION } from "../../utils/cacheHelpers";
 import { useSettings } from "../../hooks/useSettings";
 
@@ -100,6 +100,11 @@ function Navbar({ isOnline = true, isBackendAvailable = true }) {
             <NavLink to="/" className={navLinkClass}>
               <FiFileText className="w-4 h-4" />
               <span>Estimator</span>
+            </NavLink>
+
+            <NavLink to="/customers" className={navLinkClass}>
+              <FiUsers className="w-4 h-4" />
+              <span>Customers</span>
             </NavLink>
 
             <NavLink to="/history" className={navLinkClass}>

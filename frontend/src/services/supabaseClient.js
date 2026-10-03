@@ -43,6 +43,12 @@ ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE quotations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they already exist (prevents ERROR 42710)
+DROP POLICY IF EXISTS "Allow public read-write for anon key" ON customers;
+DROP POLICY IF EXISTS "Allow public read-write for anon key" ON quotations;
+DROP POLICY IF EXISTS "Allow public read-write for anon key" ON invoices;
+
+-- Create policies cleanly
 CREATE POLICY "Allow public read-write for anon key" ON customers FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public read-write for anon key" ON quotations FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow public read-write for anon key" ON invoices FOR ALL USING (true) WITH CHECK (true);

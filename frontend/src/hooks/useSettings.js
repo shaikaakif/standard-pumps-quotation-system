@@ -4,8 +4,23 @@ import { CacheManager } from '../utils/cacheHelpers';
 
 const CACHE_KEY = 'spqs_settings';
 
+const DEFAULT_SETTINGS = {
+  shop_name: 'STANDARD PUMPS & BOREWELLS',
+  tagline: 'Dealers in Submersible Motors, Pumps, Pipes, Cables & Fittings',
+  phone: '+91 9110704747',
+  secondary_phone: '+91 9581472786',
+  whatsapp: '+91 9110704747',
+  address: 'Pillar No 101, Attapur, Ring Road, Hyderabad, TS - 500048',
+  owner_name: 'Shaik Asif',
+  email: '',
+  gst_number: '',
+  website: '',
+  default_mode: 'REGULAR',
+  default_discount_percentage: 2.5
+};
+
 export const useSettings = () => {
-  const [settings, setSettings] = useState(null);
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   
@@ -18,21 +33,35 @@ export const useSettings = () => {
   const fetchSettings = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Check cache first
-      const cached = CacheManager.get(CACHE_KEY);
-      if (cached) {
-        setSettings(cached);
+      // 1. Check local storage / cache first
+      let localData = null;
+      try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (raw) localData = JSON.parse(raw);
+      } catch (e) {}
+
+      if (!localData) {
+        localData = CacheManager.get(CACHE_KEY);
       }
 
-      // Fetch from API
-      const response = await apiClient.get('/settings');
-      const data = response.data;
-      
-      setSettings(data);
-      // Cache for 24 hours
-      CacheManager.set(CACHE_KEY, data, 24 * 60 * 60 * 1000);
+      const initialSettings = localData ? { ...DEFAULT_SETTINGS, ...localData } : DEFAULT_SETTINGS;
+      setSettings(initialSettings);
+
+      // 2. Try fetching from backend API if available (silent fallback if offline/serverless)
+      try {
+        const response = await apiClient.get('/settings');
+        if (response?.data) {
+          const merged = { ...initialSettings, ...response.data };
+          setSettings(merged);
+          localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
+          CacheManager.set(CACHE_KEY, merged, 24 * 60 * 60 * 1000);
+        }
+      } catch (apiErr) {
+        // Backend optional in serverless/offline mode
+      }
     } catch (error) {
-      console.error('Failed to fetch settings:', error);
+      console.warn('Using local settings configuration:', error);
+      setSettings(DEFAULT_SETTINGS);
     } finally {
       setIsLoading(false);
     }
@@ -45,12 +74,18 @@ export const useSettings = () => {
   const updateSettings = async (newSettings) => {
     setIsSaving(true);
     try {
-      const response = await apiClient.put('/settings', newSettings);
-      const data = response.data;
-      
-      setSettings(data);
-      CacheManager.set(CACHE_KEY, data, 24 * 60 * 60 * 1000);
-      return data;
+      const merged = { ...DEFAULT_SETTINGS, ...settings, ...newSettings };
+      setSettings(merged);
+      localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
+      CacheManager.set(CACHE_KEY, merged, 24 * 60 * 60 * 1000);
+
+      // Background sync to backend if online
+      try {
+        await apiClient.put('/settings', merged);
+      } catch (apiErr) {
+        console.info('Settings saved locally (serverless/offline mode)');
+      }
+      return merged;
     } catch (error) {
       console.error('Failed to update settings:', error);
       throw error;

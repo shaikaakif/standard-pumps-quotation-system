@@ -1,6 +1,30 @@
 import toast from "react-hot-toast";
 
 /**
+ * Retrieves the configured shop branding from localStorage or fallback defaults.
+ */
+function getShopConfig() {
+  try {
+    const raw = localStorage.getItem("spqs_settings");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        shop_name: parsed.shop_name || parsed.business?.shop_name || "STANDARD PUMPS & BOREWELL",
+        phone: parsed.phone || parsed.business?.phone || "+91 9110704747",
+        secondary_phone: parsed.secondary_phone || parsed.business?.secondary_phone || "+91 9581472786",
+        address: parsed.address || parsed.business?.address || "Pillar No 101, Attapur, Ring Road, Hyderabad - 500048",
+      };
+    }
+  } catch (e) {}
+  return {
+    shop_name: "STANDARD PUMPS & BOREWELL",
+    phone: "+91 9110704747",
+    secondary_phone: "+91 9581472786",
+    address: "Pillar No 101, Attapur, Ring Road, Hyderabad - 500048",
+  };
+}
+
+/**
  * Service to manage professional quotation, invoice, and cashback sharing behaviors,
  * optimizing for mobile (Web Share API / Native) and desktop (WhatsApp Desktop App / Web).
  */
@@ -13,8 +37,10 @@ export const shareService = {
    * Builds the premium pre-filled WhatsApp text when a quotation PDF is attached.
    */
   formatAttachmentText(quotation) {
+    const shop = getShopConfig();
     const cust = quotation?.customer_name ? ` for ${quotation.customer_name}` : "";
-    return `Assalamu Alaikum.\n\nPlease find your quotation${cust} from Standard Pumps & Borewell attached.\n\nFor any assistance please contact us.\n\nStandard Pumps & Borewell\n📞 9110704747 / 9581472786`;
+    const phoneStr = shop.secondary_phone ? `${shop.phone} / ${shop.secondary_phone}` : shop.phone;
+    return `Assalamu Alaikum / Greetings.\n\nPlease find your quotation${cust} from ${shop.shop_name} attached.\n\nFor any assistance please contact us.\n\n*${shop.shop_name}*\n📞 ${phoneStr}\n📍 ${shop.address}`;
   },
 
   /**
@@ -24,6 +50,7 @@ export const shareService = {
   formatShareText(quotation) {
     if (!quotation) return "";
 
+    const shop = getShopConfig();
     const {
       customer_name,
       phone,
@@ -42,8 +69,9 @@ export const shareService = {
     // Find primary motor spec
     const primaryMotor = motors?.find(m => m.is_primary_recommendation) || motors?.[0];
     const motorName = primaryMotor ? `${primaryMotor.brand} ${primaryMotor.spec}` : "Submersible Motor";
+    const phoneStr = shop.secondary_phone ? `${shop.phone} , ${shop.secondary_phone}` : shop.phone;
 
-    return `📋 *STANDARD PUMPS & BOREWELL*
+    return `📋 *${shop.shop_name.toUpperCase()}*
 ----------------------------------------
 *Quotation Estimate*
 
@@ -63,8 +91,8 @@ export const shareService = {
 💰 *Grand Total: ${grandTotal}*
 ----------------------------------------
 _Thank you for your business!_
-📞 *Contact Shop:* +91 9110704747 , +91 9581472786
-📍 *Address:* Pillar No 101, Attapur, Ring Road, Hyderabad - 500048`;
+📞 *Contact Shop:* ${phoneStr}
+📍 *Address:* ${shop.address}`;
   },
 
   // ==========================================
@@ -75,8 +103,10 @@ _Thank you for your business!_
    * Builds the premium pre-filled WhatsApp text when an invoice PDF is attached.
    */
   formatInvoiceAttachmentText(invoice) {
+    const shop = getShopConfig();
     const invNo = invoice?.invoice_number || "Invoice";
-    return `Assalamu Alaikum.\n\nPlease find your Bill/Invoice (${invNo}) from Standard Pumps & Borewell attached.\n\nFor any query or assistance, please contact us.\n\nStandard Pumps & Borewell\n📞 9110704747 / 9581472786`;
+    const phoneStr = shop.secondary_phone ? `${shop.phone} / ${shop.secondary_phone}` : shop.phone;
+    return `Assalamu Alaikum / Greetings.\n\nPlease find your Bill/Invoice (${invNo}) from ${shop.shop_name} attached.\n\nFor any query or assistance, please contact us.\n\n*${shop.shop_name}*\n📞 ${phoneStr}\n📍 ${shop.address}`;
   },
 
   /**
@@ -84,6 +114,7 @@ _Thank you for your business!_
    */
   formatInvoiceShareText(invoice) {
     if (!invoice) return "";
+    const shop = getShopConfig();
     const {
       invoice_number,
       customer_name,
@@ -102,8 +133,9 @@ _Thank you for your business!_
       .join("\n");
 
     const taxLine = is_gst ? `\n• *GST (18%):* ₹${total_tax.toLocaleString("en-IN", { minimumFractionDigits: 2 })}` : "";
+    const phoneStr = shop.secondary_phone ? `${shop.phone} , ${shop.secondary_phone}` : shop.phone;
 
-    return `🧾 *STANDARD PUMPS & BOREWELL*
+    return `🧾 *${shop.shop_name.toUpperCase()}*
 ----------------------------------------
 *${is_gst ? "TAX INVOICE" : "RETAIL INVOICE"}: #${invoice_number}*
 
@@ -119,8 +151,8 @@ ${itemsSummary}
 💰 *Grand Total: ₹${grand_total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}*
 ----------------------------------------
 _Thank you for your business!_
-📞 *Contact Shop:* +91 9110704747 , +91 9581472786
-📍 *Address:* Pillar No 101, Attapur, Ring Road, Hyderabad - 500048`;
+📞 *Contact Shop:* ${phoneStr}
+📍 *Address:* ${shop.address}`;
   },
 
   // ==========================================
@@ -132,6 +164,7 @@ _Thank you for your business!_
    */
   formatCashbackShareText(cashback) {
     if (!cashback) return "";
+    const shop = getShopConfig();
     const {
       voucher_code,
       customer_name,
@@ -142,8 +175,9 @@ _Thank you for your business!_
     } = cashback;
 
     const amountFormatted = Number(cashback_amount || 0).toLocaleString("en-IN");
+    const phoneStr = shop.secondary_phone ? `${shop.phone} , ${shop.secondary_phone}` : shop.phone;
 
-    return `🎁 *STANDARD PUMPS & BOREWELL*
+    return `🎁 *${shop.shop_name.toUpperCase()}*
 ----------------------------------------
 *EXCLUSIVE VIP CASHBACK & SERVICE PRIVILEGE PASS*
 
@@ -159,15 +193,15 @@ _Thank you for your business!_
   (Free 1-time on-site inspection & minor troubleshooting check for your borewell pump)
 
 🛡️ *Anti-Fraud & Redemption Terms:*
-1. Valid for single one-time redemption on your next purchase or repair service at Standard Pumps.
+1. Valid for single one-time redemption on your next purchase or repair service at ${shop.shop_name}.
 2. Strictly locked to your registered mobile number (+91 ${phone}).
 3. Present this digital card / voucher code at the shop counter to redeem.
 4. Non-transferable and non-convertible to physical cash.
 
 ----------------------------------------
-_Thank you for choosing Standard Pumps & Borewell!_
-📞 *Shop Contact:* +91 9110704747 , +91 9581472786
-📍 *Address:* Pillar No 101, Attapur, Ring Road, Hyderabad - 500048`;
+_Thank you for choosing ${shop.shop_name}!_
+📞 *Shop Contact:* ${phoneStr}
+📍 *Address:* ${shop.address}`;
   },
 
   // ==========================================

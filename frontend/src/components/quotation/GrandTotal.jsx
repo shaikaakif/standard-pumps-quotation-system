@@ -3,6 +3,8 @@ import { useSettings } from "../../hooks/useSettings";
 
 function GrandTotal({ totals }) {
   const { settings } = useSettings();
+  const ownerName = settings?.owner_name || settings?.business?.owner_name || "SHAIK ASIF";
+
   return (
     <div className="quotation-card-group">
       {/* Grid wrapping Signature area vs invoice calculations */}
@@ -11,7 +13,7 @@ function GrandTotal({ totals }) {
         <div className="pb-4">
           <div className="border border-dashed border-brand-gray-300 rounded-md p-5 text-center bg-brand-gray-50/30 w-full max-w-[260px] mx-auto md:mx-0">
             <div className="h-14 flex items-center justify-center text-3xl text-brand-primary font-calligraphy font-semibold">
-              SHAIK ASIF
+              {ownerName}
             </div>
             <div className="border-t border-brand-gray-300 pt-2 text-[10px] font-bold text-brand-muted uppercase tracking-widest">
               Authorized Signatory

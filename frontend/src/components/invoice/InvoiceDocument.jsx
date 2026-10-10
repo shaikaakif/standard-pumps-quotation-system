@@ -36,10 +36,18 @@ export default function InvoiceDocument({ invoice }) {
     amount_in_words = ""
   } = invoice;
 
+  const shopName = settings?.shop_name || settings?.business?.shop_name || "STANDARD PUMPS & BOREWELLS";
+  const tagline = settings?.tagline || settings?.business?.tagline || "Dealers in Submersible Motors, Pumps, Pipes, Cables & Fittings";
+  const shopPhone = settings?.phone || settings?.business?.phone || "+91 9110704747";
+  const shopSecondaryPhone = settings?.secondary_phone || settings?.business?.secondary_phone;
+  const shopWhatsapp = settings?.whatsapp || settings?.business?.whatsapp || shopPhone;
+  const shopAddress = settings?.address || settings?.business?.address || "Pillar No 101, Attapur, Ring Road, Hyderabad, TS - 500048";
+  const ownerName = settings?.owner_name || settings?.business?.owner_name || "Shaik Asif";
+
   return (
     <div className="quotation-container bg-white border border-brand-gray-200 shadow-sm rounded-xl p-3.5 sm:p-7 relative overflow-hidden text-brand-text">
       {/* Background Watermark */}
-      <WatermarkBackground text={settings?.business?.shop_name || "STANDARD PUMPS & BOREWELL"} visible={true} />
+      <WatermarkBackground text={shopName} visible={true} />
 
       {/* 1. Header: Shop Identity & Invoice Number */}
       <div className="border-b-2 border-brand-primary pb-4 mb-4">
@@ -48,32 +56,40 @@ export default function InvoiceDocument({ invoice }) {
           <div className="flex items-center space-x-3 sm:space-x-4">
             <img 
               src={logos?.quotationLogo || "/logo/quotation-logo.png"} 
-              alt="Standard Pumps Logo" 
+              alt={`${shopName} Logo`} 
               className="w-14 h-14 sm:w-16 sm:h-16 object-contain shrink-0 rounded-full shadow-sm border border-brand-gray-200" 
             />
             <div>
               <h1 className="text-xl sm:text-2xl font-black text-brand-primary tracking-tight uppercase leading-tight">
-                {settings?.business?.shop_name || "STANDARD PUMPS & BOREWELLS"}
+                {shopName}
               </h1>
               <p className="text-[10px] text-brand-muted uppercase tracking-widest font-semibold mt-0.5">
-                {settings?.business?.tagline || "Dealers in Submersible Motors, Pumps, Pipes, Cables & Fittings"}
+                {tagline}
               </p>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-[11px] text-brand-muted">
                 <span className="flex items-center space-x-1 font-semibold text-brand-navy-900">
                   <FiPhone className="w-3 h-3 text-brand-primary" />
-                  <span>+91 9110704747</span>
-                  <span>•</span>
-                  <span>+91 9581472786</span>
+                  <span>{shopPhone}</span>
+                  {shopSecondaryPhone && (
+                    <>
+                      <span>•</span>
+                      <span>{shopSecondaryPhone}</span>
+                    </>
+                  )}
                 </span>
-                <span>•</span>
-                <span className="flex items-center space-x-1 text-emerald-700 font-semibold">
-                  <FaWhatsapp className="w-3 h-3 text-brand-green" />
-                  <span>+91 9110704747</span>
-                </span>
+                {shopWhatsapp && (
+                  <>
+                    <span>•</span>
+                    <span className="flex items-center space-x-1 text-emerald-700 font-semibold">
+                      <FaWhatsapp className="w-3 h-3 text-brand-green" />
+                      <span>{shopWhatsapp}</span>
+                    </span>
+                  </>
+                )}
                 <span>•</span>
                 <span className="flex items-center space-x-1">
                   <FiMapPin className="w-3 h-3 text-brand-primary" />
-                  <span>Pillar No 101, Attapur, Ring Road, Hyderabad, TS - 500048</span>
+                  <span>{shopAddress}</span>
                 </span>
               </div>
             </div>
@@ -258,10 +274,10 @@ export default function InvoiceDocument({ invoice }) {
         {/* Authorized Signatory (Golden Signature Calligraphy) */}
         <div className="text-center w-52">
           <span className="text-[9px] font-bold uppercase tracking-wider text-brand-navy-900 block mb-0.5">
-            For STANDARD PUMPS & BOREWELLS
+            For {shopName}
           </span>
           <div className="h-10 flex items-center justify-center text-3xl text-brand-primary font-signature font-normal select-none tracking-wide pt-1">
-            Shaik Asif
+            {ownerName}
           </div>
           <div className="border-t border-brand-gray-300 pt-0.5 text-[9px] font-bold uppercase tracking-widest text-brand-muted">
             Authorized Signatory

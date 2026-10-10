@@ -14,6 +14,7 @@ export default function SupabaseSyncForm() {
   const [testResult, setTestResult] = useState(null);
   const [isSyncingAll, setIsSyncingAll] = useState(false);
   const [copiedSql, setCopiedSql] = useState(false);
+  const [showAdvancedSql, setShowAdvancedSql] = useState(false);
 
   useEffect(() => {
     const current = supabaseService.getConfig();
@@ -243,36 +244,48 @@ export default function SupabaseSyncForm() {
           </div>
         )}
 
-        {/* Supabase Schema Helper */}
-        <div className="mt-4 p-4 bg-brand-navy-950 text-brand-navy-100 rounded-xl border border-brand-navy-800">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-accent flex items-center space-x-1.5">
-              <span>SQL Schema Setup Script</span>
-            </span>
-            <button
-              type="button"
-              onClick={handleCopySql}
-              className="text-xs bg-white/10 hover:bg-white/20 text-white px-2.5 py-1 rounded flex items-center space-x-1 transition-all"
-            >
-              {copiedSql ? (
-                <>
-                  <FiCheck className="w-3 h-3 text-emerald-400" />
-                  <span className="text-emerald-400 font-bold">Copied!</span>
-                </>
-              ) : (
-                <>
-                  <FiCopy className="w-3 h-3" />
-                  <span>Copy SQL</span>
-                </>
-              )}
-            </button>
-          </div>
-          <p className="text-[11px] text-brand-navy-300 mb-2 leading-relaxed">
-            Run this one-time script in your <strong>Supabase SQL Editor</strong> to create the tables (<code>customers</code>, <code>quotations</code>, <code>invoices</code>) and Row Level Security policies.
-          </p>
-          <pre className="bg-black/40 p-2.5 rounded text-[10px] font-mono overflow-x-auto text-brand-navy-200 max-h-28 border border-white/5">
-            {DEFAULT_SUPABASE_SCHEMA_SQL}
-          </pre>
+        {/* Optional Advanced Developer SQL (Hidden by default for clean client presentation) */}
+        <div className="mt-3 pt-3 border-t border-brand-gray-200">
+          <button
+            type="button"
+            onClick={() => setShowAdvancedSql(!showAdvancedSql)}
+            className="text-[11px] font-bold text-brand-muted hover:text-brand-primary flex items-center space-x-1 transition-colors"
+          >
+            <span>{showAdvancedSql ? "▼ Hide Advanced Database Setup" : "▶ Show Advanced Database Setup (Developer Only)"}</span>
+          </button>
+
+          {showAdvancedSql && (
+            <div className="mt-3 p-4 bg-brand-navy-950 text-brand-navy-100 rounded-xl border border-brand-navy-800">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-brand-accent flex items-center space-x-1.5">
+                  <span>SQL Schema Setup Script</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopySql}
+                  className="text-xs bg-white/10 hover:bg-white/20 text-white px-2.5 py-1 rounded flex items-center space-x-1 transition-all"
+                >
+                  {copiedSql ? (
+                    <>
+                      <FiCheck className="w-3 h-3 text-emerald-400" />
+                      <span className="text-emerald-400 font-bold">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <FiCopy className="w-3 h-3" />
+                      <span>Copy SQL</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <p className="text-[11px] text-brand-navy-300 mb-2 leading-relaxed">
+                Run this one-time script in your <strong>Supabase SQL Editor</strong> to create the tables (<code>customers</code>, <code>quotations</code>, <code>invoices</code>) and Row Level Security policies.
+              </p>
+              <pre className="bg-black/40 p-2.5 rounded text-[10px] font-mono overflow-x-auto text-brand-navy-200 max-h-28 border border-white/5">
+                {DEFAULT_SUPABASE_SCHEMA_SQL}
+              </pre>
+            </div>
+          )}
         </div>
       </div>
     </div>

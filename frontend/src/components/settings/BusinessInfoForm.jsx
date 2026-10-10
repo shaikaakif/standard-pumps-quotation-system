@@ -7,6 +7,7 @@ const BusinessInfoForm = ({ settings, updateSettings, isSaving }) => {
     shop_name: '',
     tagline: '',
     phone: '',
+    secondary_phone: '',
     whatsapp: '',
     address: '',
     email: '',
@@ -21,6 +22,7 @@ const BusinessInfoForm = ({ settings, updateSettings, isSaving }) => {
         shop_name: settings.shop_name || '',
         tagline: settings.tagline || '',
         phone: settings.phone || '',
+        secondary_phone: settings.secondary_phone || '',
         whatsapp: settings.whatsapp || '',
         address: settings.address || '',
         email: settings.email || '',
@@ -82,12 +84,24 @@ const BusinessInfoForm = ({ settings, updateSettings, isSaving }) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Primary Phone</label>
             <input
               type="text"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
+              placeholder="+91 9110704747"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Phone</label>
+            <input
+              type="text"
+              name="secondary_phone"
+              value={formData.secondary_phone}
+              onChange={handleChange}
+              placeholder="+91 9581472786"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -98,6 +112,7 @@ const BusinessInfoForm = ({ settings, updateSettings, isSaving }) => {
               name="whatsapp"
               value={formData.whatsapp}
               onChange={handleChange}
+              placeholder="+91 9110704747"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>

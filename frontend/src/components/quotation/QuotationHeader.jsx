@@ -22,6 +22,13 @@ function QuotationHeader({ quotationId, generatedAt }) {
     }
   };
 
+  const shopName = settings?.shop_name || settings?.business?.shop_name || "STANDARD PUMPS & BOREWELLS";
+  const tagline = settings?.tagline || settings?.business?.tagline || "Dealers in Submersible Motors, Pipes, Cables & Fittings";
+  const phone = settings?.phone || settings?.business?.phone || "+91 9110704747";
+  const secondaryPhone = settings?.secondary_phone || settings?.business?.secondary_phone;
+  const whatsappNumber = settings?.whatsapp || settings?.business?.whatsapp || phone;
+  const address = settings?.address || settings?.business?.address || "Pillar No 101, Attapur, Ring Road, Hyderabad, TS - 500048";
+
   return (
     <div className="border-b border-brand-gray-200 pb-5 mb-5 quotation-card-group">
       {/* Grid wrapper for responsive shop meta vs invoice number */}
@@ -30,15 +37,15 @@ function QuotationHeader({ quotationId, generatedAt }) {
         <div className="flex items-center space-x-3.5">
           <img 
             src={logos?.quotationLogo || "/logo/quotation-logo.png"} 
-            alt="Standard Pumps Logo" 
+            alt={`${shopName} Logo`} 
             className="w-16 h-16 object-contain shrink-0 rounded-full shadow-sm border border-brand-gray-200" 
           />
           <div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-brand-navy-900 leading-tight uppercase">
-              {settings?.business?.shop_name || "STANDARD PUMPS & BOREWELLS"}
+              {shopName}
             </h2>
             <p className="text-[10px] text-brand-gray-550 uppercase tracking-widest font-semibold mt-0.5">
-              {settings?.business?.tagline || "Dealers in Submersible Motors, Pipes, Cables & Fittings"}
+              {tagline}
             </p>
             
             {/* Contact details */}
@@ -46,19 +53,27 @@ function QuotationHeader({ quotationId, generatedAt }) {
               <div className="flex items-center space-x-1.5 flex-wrap">
                 <span className="flex items-center space-x-1 font-semibold text-brand-navy-900">
                   <FiPhone className="w-3.5 h-3.5 text-brand-primary" />
-                  <span>+91 9110704747</span>
-                  <span>•</span>
-                  <span>+91 9581472786</span>
+                  <span>{phone}</span>
+                  {secondaryPhone && (
+                    <>
+                      <span>•</span>
+                      <span>{secondaryPhone}</span>
+                    </>
+                  )}
                 </span>
-                <span className="text-brand-gray-300">|</span>
-                <span className="flex items-center space-x-1 text-emerald-700 font-semibold">
-                  <FaWhatsapp className="w-3.5 h-3.5 text-brand-green" />
-                  <span>+91 9110704747</span>
-                </span>
+                {whatsappNumber && (
+                  <>
+                    <span className="text-brand-gray-300">|</span>
+                    <span className="flex items-center space-x-1 text-emerald-700 font-semibold">
+                      <FaWhatsapp className="w-3.5 h-3.5 text-brand-green" />
+                      <span>{whatsappNumber}</span>
+                    </span>
+                  </>
+                )}
               </div>
               <div className="flex items-start space-x-1.5">
                 <FiMapPin className="w-3.5 h-3.5 text-brand-primary mt-0.5 shrink-0" />
-                <span>Pillar No 101, Attapur, Ring Road, Hyderabad, TS - 500048</span>
+                <span>{address}</span>
               </div>
             </div>
           </div>

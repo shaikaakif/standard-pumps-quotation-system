@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   FiUser, FiPhone, FiCalendar, FiHash, FiPlus, FiTrash2, 
-  FiFileText, FiPercent, FiCreditCard, FiTag, FiCheckCircle
+  FiPercent, FiCreditCard, FiTag, FiCheckCircle
 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { useQuotation } from "../../context/QuotationContext";
@@ -392,10 +392,78 @@ export default function InvoiceForm() {
             return (
               <div 
                 key={item.id} 
-                className="bg-brand-gray-50/70 border border-brand-gray-200 rounded-xl p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 transition-all hover:border-brand-gray-300"
+                className="bg-brand-gray-50/70 border border-brand-gray-200 rounded-xl p-3 transition-all hover:border-brand-gray-300"
               >
-                {/* Mobile Top Row: Number badge + Description Input + Delete */}
-                <div className="flex items-center gap-2 w-full">
+                {/* 1. Mobile-only layout (sm:hidden) */}
+                <div className="sm:hidden space-y-2.5">
+                  <div className="flex items-center gap-2 w-full">
+                    <span className="w-6 h-6 rounded-full bg-brand-primary text-white text-[11px] font-bold flex items-center justify-center shrink-0">
+                      {index + 1}
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="Item Description"
+                      value={item.name}
+                      onChange={(e) => handleItemChange(item.id, "name", e.target.value)}
+                      className="flex-1 min-w-0 text-xs px-3 py-2 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-medium"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveItem(item.id)}
+                      className="p-2 text-brand-muted hover:text-brand-danger hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                      title="Remove Item"
+                    >
+                      <FiTrash2 className="w-4 h-4 text-red-500" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-12 gap-2 items-center bg-white p-2.5 rounded-lg border border-brand-gray-200 w-full">
+                    <div className="col-span-3">
+                      <span className="block text-[10px] text-brand-muted uppercase font-bold mb-1">
+                        Qty:
+                      </span>
+                      <input
+                        type="number"
+                        min="1"
+                        inputMode="numeric"
+                        placeholder="1"
+                        value={item.qty}
+                        onChange={(e) => handleItemChange(item.id, "qty", e.target.value)}
+                        className="w-full text-xs text-center px-2 py-2 bg-brand-gray-50 border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-mono font-bold"
+                        title="Quantity"
+                      />
+                    </div>
+
+                    <div className="col-span-5">
+                      <span className="block text-[10px] text-brand-muted uppercase font-bold mb-1">
+                        Rate:
+                      </span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="any"
+                        inputMode="decimal"
+                        placeholder="₹ Price"
+                        value={item.price}
+                        onChange={(e) => handleItemChange(item.id, "price", e.target.value)}
+                        className="w-full text-xs text-right px-2.5 py-2 bg-brand-gray-50 border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-mono font-bold"
+                        title="Unit Price in ₹"
+                      />
+                    </div>
+
+                    <div className="col-span-4 text-right truncate">
+                      <span className="block text-[9px] text-brand-muted uppercase font-bold mb-0.5">
+                        Subtotal
+                      </span>
+                      <span className="text-xs font-mono font-bold text-brand-primary">
+                        ₹{rowTotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Desktop-only layout (hidden sm:flex) */}
+                <div className="hidden sm:flex items-center gap-3 w-full">
                   <span className="w-6 h-6 rounded-full bg-brand-primary text-white text-[11px] font-bold flex items-center justify-center shrink-0">
                     {index + 1}
                   </span>
@@ -404,25 +472,10 @@ export default function InvoiceForm() {
                     placeholder="Item Description (e.g. 2 HP Submersible Motor)"
                     value={item.name}
                     onChange={(e) => handleItemChange(item.id, "name", e.target.value)}
-                    className="flex-1 min-w-0 text-xs sm:text-sm px-3 py-2 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-medium"
+                    className="flex-1 min-w-0 text-sm px-3 py-2 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-medium"
                   />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveItem(item.id)}
-                    className="p-2 text-brand-muted hover:text-brand-danger hover:bg-red-50 rounded-lg transition-colors shrink-0"
-                    title="Remove Item"
-                  >
-                    <FiTrash2 className="w-4 h-4 text-red-500" />
-                  </button>
-                </div>
-
-                {/* Bottom Row on Mobile / Inline on Desktop: Qty & Price & Total */}
-                <div className="grid grid-cols-12 gap-2 items-center bg-white p-2.5 rounded-lg border border-brand-gray-200 w-full sm:bg-transparent sm:border-0 sm:p-0 sm:flex sm:justify-end sm:gap-3">
-                  {/* Quantity */}
-                  <div className="col-span-3 sm:flex sm:items-center sm:space-x-1.5">
-                    <span className="block text-[10px] text-brand-muted uppercase font-bold mb-1 sm:mb-0 sm:text-xs">
-                      Qty:
-                    </span>
+                  <div className="flex items-center space-x-1.5 shrink-0">
+                    <span className="text-xs text-brand-muted uppercase font-bold">Qty:</span>
                     <input
                       type="number"
                       min="1"
@@ -430,16 +483,11 @@ export default function InvoiceForm() {
                       placeholder="1"
                       value={item.qty}
                       onChange={(e) => handleItemChange(item.id, "qty", e.target.value)}
-                      className="w-full sm:w-20 text-xs sm:text-sm text-center px-2 py-2 bg-brand-gray-50 sm:bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-mono font-bold"
-                      title="Quantity"
+                      className="w-16 text-sm text-center px-2 py-2 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-mono font-bold"
                     />
                   </div>
-
-                  {/* Rate / Unit Price */}
-                  <div className="col-span-5 sm:flex sm:items-center sm:space-x-1.5">
-                    <span className="block text-[10px] text-brand-muted uppercase font-bold mb-1 sm:mb-0 sm:text-xs">
-                      Rate:
-                    </span>
+                  <div className="flex items-center space-x-1.5 shrink-0">
+                    <span className="text-xs text-brand-muted uppercase font-bold">Rate:</span>
                     <input
                       type="number"
                       min="0"
@@ -448,18 +496,20 @@ export default function InvoiceForm() {
                       placeholder="₹ Price"
                       value={item.price}
                       onChange={(e) => handleItemChange(item.id, "price", e.target.value)}
-                      className="w-full sm:w-28 text-xs sm:text-sm text-right px-2.5 py-2 bg-brand-gray-50 sm:bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-mono font-bold"
-                      title="Unit Price in ₹"
+                      className="w-24 text-sm text-right px-2.5 py-2 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-mono font-bold"
                     />
                   </div>
-
-                  {/* Calculated Row Total */}
-                  <div className="col-span-4 sm:w-28 text-right font-mono font-bold text-xs sm:text-sm text-brand-primary px-1 truncate">
-                    <span className="block text-[9px] text-brand-muted uppercase font-bold sm:hidden mb-0.5">
-                      Subtotal
-                    </span>
+                  <div className="w-24 text-right font-mono font-bold text-sm text-brand-primary shrink-0 truncate">
                     ₹{rowTotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveItem(item.id)}
+                    className="p-2 text-brand-muted hover:text-brand-danger hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                    title="Remove Item"
+                  >
+                    <FiTrash2 className="w-4 h-4 text-red-500" />
+                  </button>
                 </div>
               </div>
             );
@@ -547,25 +597,22 @@ export default function InvoiceForm() {
         </div>
       </div>
 
-      {/* 6. Form Submit Button (Clean in-flow layout, zero screen overlap) */}
+      {/* 6. Form Submit Button */}
       <div className="mt-6">
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-full flex items-center justify-center space-x-2 bg-brand-primary text-white py-3.5 sm:py-4 rounded-xl font-bold hover:bg-brand-primary/90 transition-all shadow-md shadow-brand-primary/20 active:scale-[0.99] focus:outline-none ${
+          className={`w-full flex items-center justify-center bg-brand-primary text-white py-3.5 sm:py-4 px-4 rounded-xl font-black text-sm tracking-wide uppercase hover:bg-brand-navy-900 transition-all shadow-md shadow-brand-primary/20 active:scale-[0.99] focus:outline-none ${
             isLoading ? "opacity-75 cursor-not-allowed bg-brand-primary/80" : ""
           }`}
         >
           {isLoading ? (
-            <>
-              <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
-              <span className="uppercase tracking-wider">Generating One-Page Invoice...</span>
-            </>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+              <span>Generating Invoice...</span>
+            </div>
           ) : (
-            <>
-              <FiFileText className="w-5 h-5 text-brand-accent" />
-              <span className="uppercase tracking-wider">Generate Virtual Invoice (1-Page)</span>
-            </>
+            <span>Generate Invoice</span>
           )}
         </button>
       </div>

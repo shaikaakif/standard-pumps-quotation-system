@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   FiUser, FiPhone, FiCalendar, FiHash, FiPlus, FiTrash2, 
-  FiPercent, FiCreditCard, FiTag, FiCheckCircle
+  FiFileText, FiPercent, FiCreditCard, FiTag, FiCheckCircle
 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import { useQuotation } from "../../context/QuotationContext";

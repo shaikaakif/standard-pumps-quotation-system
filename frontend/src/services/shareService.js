@@ -69,7 +69,13 @@ export const shareService = {
     // Find primary motor spec
     const primaryMotor = motors?.find(m => m.is_primary_recommendation) || motors?.[0];
     const motorName = primaryMotor ? `${primaryMotor.brand} ${primaryMotor.spec}` : "Submersible Motor";
-    const phoneStr = shop.secondary_phone ? `${shop.phone} , ${shop.secondary_phone}` : shop.phone;
+    let alternativesText = "";
+    if (quotation.show_motor_options && Array.isArray(quotation.motor_options) && quotation.motor_options.length > 1) {
+      const optionsList = quotation.motor_options
+        .map((opt) => `• *${opt.brand}* (${opt.spec}): ₹${Number(opt.package_grand_total || 0).toLocaleString("en-IN")}${opt.is_primary ? " ⭐" : ""}`)
+        .join("\n");
+      alternativesText = `\n\n*ALTERNATIVE MOTOR CHOICES & COMPLETE PACKAGE TOTALS:*\n${optionsList}`;
+    }
 
     return `📋 *${shop.shop_name.toUpperCase()}*
 ----------------------------------------
@@ -85,7 +91,7 @@ export const shareService = {
 • *Cable:* ${cable?.brand?.display_brand || "Cable Wire"} (${cable?.spec || ""}) - ${cable?.length_meters || 0}m
 • *Motor:* ${motorName}
 • *Starter:* ${starter?.starter_type || "Starter"} (${starter?.hp || ""} HP)
-• *Fittings & Installation:* Included
+• *Fittings & Installation:* Included${alternativesText}
 
 ----------------------------------------
 💰 *Grand Total: ${grandTotal}*

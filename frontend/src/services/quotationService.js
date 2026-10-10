@@ -247,22 +247,23 @@ export class QuotationCalculationService {
     };
   }
 
-  static recommendMotors(feet, phase = "single", preferredBrand = null, mode = "REGULAR") {
+  static recommendMotors(feet, phase = "single", preferredBrand = null, mode = "REGULAR", options = {}) {
+    const { localBrandName = null, customMotors = [], selectedMotor = null } = options;
     const recommendations = [];
     const isStandard = String(mode).toUpperCase() === "STANDARD";
     const normBrand = preferredBrand ? preferredBrand.toLowerCase().trim() : null;
 
     let recommendBudget = false;
     if (!isStandard) {
-      if (normBrand === "budget" || ["jai kissan", "orient", "godavari"].includes(normBrand) || !normBrand) {
+      if (normBrand === "budget" || (localBrandName && normBrand === localBrandName.toLowerCase().trim()) || ["jai kissan", "orient", "godavari"].includes(normBrand) || !normBrand) {
         recommendBudget = true;
       }
     }
 
-    // 1. Budget Options
+    // 1. Budget / Local Options
     if (recommendBudget) {
       const budgetCfg = CONFIG.motors.budget;
-      const defaultBrand = preferredBrand && budgetCfg.brands.includes(preferredBrand) ? preferredBrand : "Jai Kissan";
+      const defaultBrand = localBrandName?.trim() || (preferredBrand && budgetCfg.brands.includes(preferredBrand) ? preferredBrand : "Jai Kissan");
 
       for (const m of budgetCfg.models) {
         if (feet >= m.min_feet && feet < m.max_feet) {
@@ -274,8 +275,9 @@ export class QuotationCalculationService {
               hp: m.hp,
               stage: m.stage,
               is_premium: false,
-              is_primary_recommendation: normBrand === "budget" || !normBrand || ["jai kissan", "orient", "godavari"].includes(normBrand),
-              reasoning: `Regular Mode with Budget preference. Recommends affordable ${defaultBrand} ${m.spec} up to ${m.max_feet} FT.`,
+              is_custom: false,
+              is_primary_recommendation: normBrand === "budget" || !normBrand || (localBrandName && normBrand === localBrandName.toLowerCase().trim()) || ["jai kissan", "orient", "godavari"].includes(normBrand),
+              reasoning: `Regular Mode with Local / Economy preference. Recommends affordable ${defaultBrand} ${m.spec} up to ${m.max_feet} FT.`,
             });
             break;
           }
@@ -311,6 +313,7 @@ export class QuotationCalculationService {
               hp: m.hp,
               stage: m.stage,
               is_premium: true,
+              is_custom: false,
               is_primary_recommendation: isPrimary,
               reasoning: `Premium ${brandName} ${specDisplay} recommended. Robust stages optimized for longevity at ${feet} FT.`,
             });
@@ -318,6 +321,35 @@ export class QuotationCalculationService {
           }
         }
       }
+    }
+
+    // 3. User-added Custom Motors
+    if (Array.isArray(customMotors) && customMotors.length > 0) {
+      for (const cm of customMotors) {
+        if (cm.brand && cm.price) {
+          const isSelectedCustom = selectedMotor && selectedMotor.brand === cm.brand && selectedMotor.price === cm.price;
+          recommendations.push({
+            brand: cm.brand,
+            spec: cm.spec || `${cm.hp || 2} HP / ${cm.stage || 25} Stage`,
+            price: Number(cm.price),
+            hp: Number(cm.hp || 2.0),
+            stage: Number(cm.stage || 25),
+            is_premium: false,
+            is_custom: true,
+            is_primary_recommendation: isSelectedCustom || false,
+            reasoning: `Custom Motor Configuration: ${cm.brand} specified with custom shop price.`,
+          });
+        }
+      }
+    }
+
+    // 4. If selectedMotor explicitly provided, ensure it becomes the primary recommendation
+    if (selectedMotor) {
+      recommendations.forEach((r) => {
+        const matchesBrand = r.brand.toLowerCase() === selectedMotor.brand.toLowerCase();
+        const matchesPrice = !selectedMotor.price || r.price === Number(selectedMotor.price);
+        r.is_primary_recommendation = matchesBrand && matchesPrice;
+      });
     }
 
     if (recommendations.length > 0 && !recommendations.some((r) => r.is_primary_recommendation)) {
@@ -400,6 +432,11 @@ export class QuotationCalculationService {
     phase = "single",
     starter_type = "manual",
     preferred_brand = null,
+    local_brand_name = null,
+    custom_motors = [],
+    selected_motor = null,
+    show_motor_options = true,
+    compare_brands = null,
     mode = "REGULAR",
   }) {
     const depth = parseInt(feet, 10);
@@ -412,8 +449,13 @@ export class QuotationCalculationService {
     // 2. Cable Selection
     const cableDetail = this.selectCable(depth, cleanMode);
 
-    // 3. Motor Recommendations
-    const motors = this.recommendMotors(depth, phase, preferred_brand, cleanMode);
+    // 3. Motor Recommendations (with local brand and custom motors support)
+    const motors = this.recommendMotors(depth, phase, preferred_brand, cleanMode, {
+      localBrandName: local_brand_name,
+      customMotors: custom_motors,
+      selectedMotor: selected_motor,
+    });
+
     if (!motors || motors.length === 0) {
       throw new Error(`No compatible submersible pump found for depth ${depth} FT and ${phase} phase.`);
     }
@@ -430,20 +472,47 @@ export class QuotationCalculationService {
     };
     const fittingDetail = this.selectFittingCharges(depth);
 
-    // 6. Subtotal and Grand Total
-    const subtotal = Math.round(
+    // 6. Subtotal and Grand Total for Primary Selection
+    const otherCosts = Math.round(
       (pipeDetail.total_cost +
         cableDetail.total_cost +
-        primaryMotor.price +
         starterDetail.price +
         accessoriesDetail.price +
         fittingDetail.price) *
         100
     ) / 100;
 
+    const subtotal = Math.round((otherCosts + primaryMotor.price) * 100) / 100;
     const totalsDetail = this.calculateTotals(subtotal);
 
-    // 7. Formatted Summary Metadata
+    // 7. Calculate Turnkey Package Grand Totals for Every Motor Option
+    const motor_options = motors
+      .filter((m) => {
+        if (!compare_brands || !Array.isArray(compare_brands) || compare_brands.length === 0) {
+          return true;
+        }
+        return compare_brands.includes(m.brand) || m.brand === primaryMotor.brand;
+      })
+      .map((m) => {
+        const subtotalForM = Math.round((otherCosts + m.price) * 100) / 100;
+        const totalsForM = this.calculateTotals(subtotalForM);
+        return {
+          brand: m.brand,
+          spec: m.spec,
+          price: m.price,
+          hp: m.hp,
+          stage: m.stage,
+          is_premium: m.is_premium,
+          is_custom: !!m.is_custom,
+          is_primary: m.brand === primaryMotor.brand && m.spec === primaryMotor.spec,
+          package_subtotal: totalsForM.subtotal,
+          package_discount: totalsForM.discount_amount,
+          package_grand_total: totalsForM.grand_total,
+          reasoning: m.reasoning,
+        };
+      });
+
+    // 8. Formatted Summary Metadata
     const modeConfig = CONFIG.business.modes[cleanMode];
     const summary = {
       mode_label: modeConfig.label,
@@ -456,7 +525,7 @@ export class QuotationCalculationService {
       formatted_grand_total: `₹${totalsDetail.grand_total.toLocaleString("en-IN")}`,
     };
 
-    // 8. Generate unique Quotation ID
+    // 9. Generate unique Quotation ID
     const quotationId = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `QUO-${Date.now()}`;
 
     return {
@@ -472,9 +541,19 @@ export class QuotationCalculationService {
       accessories: accessoriesDetail,
       fitting: fittingDetail,
       motors,
+      motor_options,
+      show_motor_options: Boolean(show_motor_options),
       totals: totalsDetail,
       summary,
     };
+  }
+
+  /**
+   * Helper to query compatible motors for a given depth live in the form
+   */
+  static getCompatibleMotors(depth, phase = "single", mode = "REGULAR", options = {}) {
+    if (!depth || isNaN(depth) || depth <= 0) return [];
+    return this.recommendMotors(parseInt(depth, 10), phase, null, mode, options);
   }
 }
 

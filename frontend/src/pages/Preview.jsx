@@ -13,6 +13,7 @@ import QuotationHeader from "../components/quotation/QuotationHeader";
 import CustomerDetails from "../components/quotation/CustomerDetails";
 import RecommendationCard from "../components/quotation/RecommendationCard";
 import PricingTable from "../components/quotation/PricingTable";
+import MotorComparison from "../components/quotation/MotorComparison";
 import GrandTotal from "../components/quotation/GrandTotal";
 import ImportantNotes from "../components/quotation/ImportantNotes";
 import FooterActions from "../components/quotation/FooterActions";
@@ -285,6 +286,11 @@ function Preview() {
             accessories={quotationResponse.accessories}
             fitting={quotationResponse.fitting}
           />
+
+          {/* Alternative Motor Brand Options & Package Totals Comparison */}
+          {quotationResponse.show_motor_options && quotationResponse.motor_options?.length > 1 && (
+            <MotorComparison motorOptions={quotationResponse.motor_options} />
+          )}
 
           {/* Authorized signatures and totals */}
           <GrandTotal totals={quotationResponse.totals} />

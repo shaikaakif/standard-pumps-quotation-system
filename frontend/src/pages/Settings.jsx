@@ -3,6 +3,7 @@ import { FiSettings, FiLoader } from 'react-icons/fi';
 import { useSettings } from '../hooks/useSettings';
 
 import BusinessInfoForm from '../components/settings/BusinessInfoForm';
+import PricingRatesCard from '../components/settings/PricingRatesCard';
 import LogoUploader from '../components/settings/LogoUploader';
 import QuotationCustomization from '../components/settings/QuotationCustomization';
 import DefaultsForm from '../components/settings/DefaultsForm';
@@ -49,6 +50,11 @@ const Settings = () => {
             updateSettings={updateSettings} 
             isSaving={isSaving} 
           />
+        </section>
+
+        {/* Quotation Material Rates & Pricing Rules Master */}
+        <section>
+          <PricingRatesCard />
         </section>
 
         <section>

@@ -16,6 +16,7 @@ const Preview = lazy(() => import("../pages/Preview"));
 const History = lazy(() => import("../pages/History"));
 const Customers = lazy(() => import("../pages/Customers"));
 const Settings = lazy(() => import("../pages/Settings"));
+const PricingPage = lazy(() => import("../pages/PricingPage"));
 
 function AppRoutes() {
   // PWA connectivity hooks
@@ -46,6 +47,7 @@ function AppRoutes() {
             <Route path="/history" element={<History />} />
             <Route path="/customers" element={<Customers />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/settings/pricing" element={<PricingPage />} />
 
             {/* Catch-all redirect to Home */}
             <Route path="*" element={<Home />} />

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useQuotation } from "../../context/QuotationContext";
 import quotationService from "../../services/quotationService";
 import toast from "react-hot-toast";
 import { 
   FiUser, FiPhone, FiCompass, FiZap, FiToggleRight, FiCpu, 
-  FiFileText, FiStar, FiAward, FiPlus, FiCheck, FiX, FiLayers, FiHelpCircle
+  FiFileText, FiStar, FiAward, FiPlus, FiCheck, FiX, FiLayers, FiHelpCircle, FiSliders
 } from "react-icons/fi";
 import { useLoadingSteps } from "../../hooks/useLoadingSteps";
 import LoadingOverlay from "../system/LoadingOverlay";
@@ -17,7 +17,8 @@ function CustomerForm() {
   const [validationErrors, setValidationErrors] = useState({});
   const loader = useLoadingSteps("quotation", 2500);
 
-  // Motor Customization States
+  // Motor Customization & Formal HP Selection States
+  const [selectedHp, setSelectedHp] = useState("auto"); // "auto" | "1" | "1.5" | "2" | "3" | "5" | "6" | "7.5" | "all"
   const [localBrandName, setLocalBrandName] = useState("Jai Kissan");
   const [customMotors, setCustomMotors] = useState([]);
   const [selectedMotorBrand, setSelectedMotorBrand] = useState("");
@@ -67,15 +68,15 @@ function CustomerForm() {
     }));
   };
 
-  // Dynamically compute available motors auto-sized for current depth & phase
+  // Dynamically compute available motors auto-sized for current depth, phase, and selected HP
   const availableMotors = useMemo(() => {
-    const feetNum = parseInt(formData.feet, 10);
-    if (!feetNum || feetNum <= 0) return [];
+    const feetNum = parseInt(formData.feet, 10) || 0;
     return quotationService.getCompatibleMotors(feetNum, formData.phase, formData.mode, {
       localBrandName,
       customMotors,
+      selectedHp,
     });
-  }, [formData.feet, formData.phase, formData.mode, localBrandName, customMotors]);
+  }, [formData.feet, formData.phase, formData.mode, localBrandName, customMotors, selectedHp]);
 
   // Keep selectedMotorBrand synchronized with availableMotors
   useEffect(() => {
@@ -185,6 +186,7 @@ function CustomerForm() {
         local_brand_name: localBrandName,
         custom_motors: customMotors,
         selected_motor: selectedMotorObj,
+        selected_hp: selectedHp,
         show_motor_options: showMotorOptions,
         compare_brands: compareBrands.length > 0 ? compareBrands : null,
         mode: formData.mode,
@@ -300,19 +302,72 @@ function CustomerForm() {
               Select primary motor for this estimate & configure multi-brand customer options.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setIsCustomModalOpen(true)}
-            className="self-start sm:self-auto flex items-center space-x-1.5 text-xs font-bold bg-brand-primary text-white hover:bg-brand-navy-900 px-3 py-1.5 rounded-lg transition-colors shadow-xs"
-          >
-            <FiPlus className="w-3.5 h-3.5" />
-            <span>+ Add Custom Motor</span>
-          </button>
+          <div className="flex items-center space-x-2 self-start sm:self-auto">
+            <Link
+              to="/settings/pricing"
+              className="inline-flex items-center space-x-1 text-xs font-bold text-brand-muted hover:text-brand-primary bg-white border border-brand-gray-300 px-2.5 py-1.5 rounded-lg transition-colors"
+              title="Edit motor rates and prices in Settings"
+            >
+              <FiSliders className="w-3 h-3 text-brand-secondary" />
+              <span>Edit Rates</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => setIsCustomModalOpen(true)}
+              className="flex items-center space-x-1.5 text-xs font-bold bg-brand-primary text-white hover:bg-brand-navy-900 px-3 py-1.5 rounded-lg transition-colors shadow-xs"
+            >
+              <FiPlus className="w-3.5 h-3.5" />
+              <span>+ Add Custom Motor</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Formal Motor Horsepower (HP) Selector */}
+        <div className="bg-brand-gray-50 p-3 sm:p-3.5 rounded-xl border border-brand-gray-200 mb-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+            <label className="text-[11px] font-black uppercase tracking-wider text-brand-navy-950 flex items-center space-x-1.5">
+              <FiZap className="w-3.5 h-3.5 text-amber-500" />
+              <span>Select Motor Power (HP / Horsepower):</span>
+            </label>
+            <span className="text-[10px] text-brand-muted font-medium">
+              Formally choose HP (1.5 HP, 2 HP, etc.) or auto-size by depth
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            {[
+              { id: "auto", label: "⚡ Auto (By Depth)" },
+              { id: "1", label: "1.0 HP" },
+              { id: "1.5", label: "1.5 HP" },
+              { id: "2", label: "2.0 HP" },
+              { id: "3", label: "3.0 HP" },
+              { id: "5", label: "5.0 HP" },
+              { id: "6", label: "6.0 HP" },
+              { id: "7.5", label: "7.5 HP" },
+              { id: "all", label: "All Motors" },
+            ].map((hpOption) => {
+              const isSelected = selectedHp === hpOption.id;
+              return (
+                <button
+                  key={hpOption.id}
+                  type="button"
+                  onClick={() => setSelectedHp(hpOption.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all shrink-0 active:scale-95 ${
+                    isSelected
+                      ? "bg-brand-primary text-white shadow-xs ring-2 ring-brand-primary/30"
+                      : "bg-white text-brand-navy-900 hover:bg-brand-gray-100 border border-brand-gray-300"
+                  }`}
+                >
+                  <span>{hpOption.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {availableMotors.length === 0 ? (
           <div className="p-4 bg-brand-gray-50 border border-brand-gray-200 rounded-xl text-center text-xs text-brand-muted">
-            Enter borewell depth in feet above to automatically size compatible motors (Crompton, CRI, Aqua Texmo, Local & Custom).
+            Enter borewell depth in feet or select a motor HP above (e.g. 1.5 HP, 2.0 HP) to view compatible pump brands.
           </div>
         ) : (
           <div className="space-y-4">

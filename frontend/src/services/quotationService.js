@@ -4,8 +4,8 @@
  * Exact mathematical and business parity with Standard Pumps & Borewells pricing rules.
  */
 
-// Configuration Data
-export const CONFIG = {
+// Configuration Data (Factory Defaults)
+export const DEFAULT_CONFIG = {
   business: {
     feet_to_meter_ratio: 3.28,
     cable_extra_meters: 10,
@@ -141,30 +141,107 @@ export const CONFIG = {
   },
 };
 
+export const CONFIG = DEFAULT_CONFIG;
+
 export class QuotationCalculationService {
+  /**
+   * Retrieves the live pricing configuration from localStorage,
+   * cleanly merging with DEFAULT_CONFIG so all properties are guaranteed to exist.
+   */
+  static getPricingConfig() {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        const stored = localStorage.getItem("spqs_pricing_config");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return {
+            ...DEFAULT_CONFIG,
+            ...parsed,
+            business: { ...DEFAULT_CONFIG.business, ...(parsed.business || {}) },
+            pipes: {
+              ...DEFAULT_CONFIG.pipes,
+              ...(parsed.pipes || {}),
+              rates: Array.isArray(parsed.pipes?.rates) && parsed.pipes.rates.length > 0 ? parsed.pipes.rates : DEFAULT_CONFIG.pipes.rates,
+            },
+            cables: {
+              ...DEFAULT_CONFIG.cables,
+              ...(parsed.cables || {}),
+              local_rates: Array.isArray(parsed.cables?.local_rates) && parsed.cables.local_rates.length > 0 ? parsed.cables.local_rates : DEFAULT_CONFIG.cables.local_rates,
+              sudhakar_rates: Array.isArray(parsed.cables?.sudhakar_rates) && parsed.cables.sudhakar_rates.length > 0 ? parsed.cables.sudhakar_rates : DEFAULT_CONFIG.cables.sudhakar_rates,
+            },
+            starters: { ...DEFAULT_CONFIG.starters, ...(parsed.starters || {}) },
+            accessories: { ...DEFAULT_CONFIG.accessories, ...(parsed.accessories || {}) },
+            fitting_charges: {
+              ...DEFAULT_CONFIG.fitting_charges,
+              ...(parsed.fitting_charges || {}),
+              ranges: Array.isArray(parsed.fitting_charges?.ranges) && parsed.fitting_charges.ranges.length > 0 ? parsed.fitting_charges.ranges : DEFAULT_CONFIG.fitting_charges.ranges,
+            },
+            motors: { ...DEFAULT_CONFIG.motors, ...(parsed.motors || {}) },
+          };
+        }
+      }
+    } catch (e) {
+      console.warn("Could not read custom pricing config from localStorage:", e);
+    }
+    return DEFAULT_CONFIG;
+  }
+
+  /**
+   * Persists customized pricing configuration to localStorage.
+   */
+  static savePricingConfig(newConfig) {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.setItem("spqs_pricing_config", JSON.stringify(newConfig));
+        return true;
+      }
+    } catch (e) {
+      console.error("Could not save pricing config to localStorage:", e);
+    }
+    return false;
+  }
+
+  /**
+   * Resets pricing configuration back to factory defaults.
+   */
+  static resetPricingConfig() {
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.removeItem("spqs_pricing_config");
+        return true;
+      }
+    } catch (e) {
+      console.error("Could not reset pricing config:", e);
+    }
+    return false;
+  }
+
   static convertFeetToMeters(feet) {
-    return Math.round((feet / CONFIG.business.feet_to_meter_ratio) * 100) / 100;
+    const config = this.getPricingConfig();
+    return Math.round((feet / config.business.feet_to_meter_ratio) * 100) / 100;
   }
 
   static calculateCableLength(meters) {
-    return Math.round((meters + CONFIG.business.cable_extra_meters) * 100) / 100;
+    const config = this.getPricingConfig();
+    return Math.round((meters + config.business.cable_extra_meters) * 100) / 100;
   }
 
   static selectPipe(feet, mode = "REGULAR") {
+    const config = this.getPricingConfig();
     let pipeType = "12.5 KG";
     let pricePerMeter = 70.0;
 
-    for (const rate of CONFIG.pipes.rates) {
+    for (const rate of config.pipes.rates) {
       if (feet >= rate.min_feet && feet < rate.max_feet) {
         pipeType = rate.type;
-        pricePerMeter = rate.price_per_meter;
+        pricePerMeter = Number(rate.price_per_meter);
         break;
       }
     }
 
     const meters = this.convertFeetToMeters(feet);
     const totalCost = Math.round(meters * pricePerMeter * 100) / 100;
-    const reasoning = feet < 200 ? CONFIG.pipes.durability_notice : null;
+    const reasoning = feet < 200 ? config.pipes.durability_notice : null;
 
     return {
       brand: {
@@ -180,6 +257,7 @@ export class QuotationCalculationService {
   }
 
   static selectCable(feet, mode = "REGULAR") {
+    const config = this.getPricingConfig();
     const meters = this.convertFeetToMeters(feet);
     const cableLen = this.calculateCableLength(meters);
 
@@ -196,36 +274,36 @@ export class QuotationCalculationService {
       displayBrand = "Sudhakar Company Cable";
       reasoning = "Standard mode: Enforces premium branded company cable.";
 
-      for (const rate of CONFIG.cables.sudhakar_rates) {
+      for (const rate of config.cables.sudhakar_rates) {
         if (feet >= rate.min_feet && feet < rate.max_feet) {
           cableSpec = rate.spec;
-          pricePerMeter = rate.price_per_meter;
+          pricePerMeter = Number(rate.price_per_meter);
           break;
         }
       }
     } else {
       // REGULAR MODE
-      if (feet <= CONFIG.cables.cutoff_feet) {
+      if (feet <= config.cables.cutoff_feet) {
         internalBrand = "Local / Normal";
         displayBrand = "Cable WIRE"; // Preserve retail customer trust
-        reasoning = "Regular mode: Enforces standard cable for <= 350 FT.";
+        reasoning = `Regular mode: Enforces standard cable for <= ${config.cables.cutoff_feet} FT.`;
 
-        for (const rate of CONFIG.cables.local_rates) {
+        for (const rate of config.cables.local_rates) {
           if (rate.spec === "2.5 SQMM") {
             cableSpec = "2.5 SQMM";
-            pricePerMeter = rate.price_per_meter;
+            pricePerMeter = Number(rate.price_per_meter);
             break;
           }
         }
       } else {
         internalBrand = "Sudhakar Company";
         displayBrand = "Sudhakar Company Cable";
-        reasoning = "Borewell depth exceeds 350 feet cutoff. Branded company cable recommended for safety.";
+        reasoning = `Borewell depth exceeds ${config.cables.cutoff_feet} feet cutoff. Branded company cable recommended for safety.`;
 
-        for (const rate of CONFIG.cables.sudhakar_rates) {
+        for (const rate of config.cables.sudhakar_rates) {
           if (feet >= rate.min_feet && feet < rate.max_feet) {
             cableSpec = rate.spec;
-            pricePerMeter = rate.price_per_meter;
+            pricePerMeter = Number(rate.price_per_meter);
             break;
           }
         }
@@ -248,77 +326,85 @@ export class QuotationCalculationService {
   }
 
   static recommendMotors(feet, phase = "single", preferredBrand = null, mode = "REGULAR", options = {}) {
-    const { localBrandName = null, customMotors = [], selectedMotor = null } = options;
+    const { localBrandName = null, customMotors = [], selectedMotor = null, selectedHp = "auto" } = options;
+    const config = this.getPricingConfig();
     const recommendations = [];
     const isStandard = String(mode).toUpperCase() === "STANDARD";
     const normBrand = preferredBrand ? preferredBrand.toLowerCase().trim() : null;
+    const targetHp = selectedHp && selectedHp !== "auto" && selectedHp !== "all" ? parseFloat(selectedHp) : null;
+    const phaseKey = String(phase || "single").toLowerCase();
 
     let recommendBudget = false;
     if (!isStandard) {
-      if (normBrand === "budget" || (localBrandName && normBrand === localBrandName.toLowerCase().trim()) || ["jai kissan", "orient", "godavari"].includes(normBrand) || !normBrand) {
+      if (normBrand === "budget" || (localBrandName && normBrand === localBrandName.toLowerCase().trim()) || ["jai kissan", "orient", "godavari", "local"].includes(normBrand) || !normBrand) {
         recommendBudget = true;
       }
     }
 
     // 1. Budget / Local Options
-    if (recommendBudget) {
-      const budgetCfg = CONFIG.motors.budget;
-      const defaultBrand = localBrandName?.trim() || (preferredBrand && budgetCfg.brands.includes(preferredBrand) ? preferredBrand : "Jai Kissan");
+    if (recommendBudget && config.motors?.budget) {
+      const budgetCfg = config.motors.budget;
+      const defaultBrand = localBrandName?.trim() || (preferredBrand && budgetCfg.brands?.includes(preferredBrand) ? preferredBrand : "Jai Kissan");
 
-      for (const m of budgetCfg.models) {
-        if (feet >= m.min_feet && feet < m.max_feet) {
-          if (m.phase_compatibility.includes(phase.toLowerCase())) {
-            recommendations.push({
-              brand: defaultBrand,
-              spec: m.spec,
-              price: m.price,
-              hp: m.hp,
-              stage: m.stage,
-              is_premium: false,
-              is_custom: false,
-              is_primary_recommendation: normBrand === "budget" || !normBrand || (localBrandName && normBrand === localBrandName.toLowerCase().trim()) || ["jai kissan", "orient", "godavari"].includes(normBrand),
-              reasoning: `Regular Mode with Local / Economy preference. Recommends affordable ${defaultBrand} ${m.spec} up to ${m.max_feet} FT.`,
-            });
-            break;
-          }
+      for (const m of (budgetCfg.models || [])) {
+        const matchesPhase = !m.phase_compatibility || m.phase_compatibility.includes(phaseKey);
+        const matchesHp = targetHp !== null ? parseFloat(m.hp) === targetHp : true;
+        const matchesDepth = targetHp !== null ? true : (feet >= m.min_feet && feet < m.max_feet);
+
+        if (matchesPhase && matchesHp && matchesDepth) {
+          recommendations.push({
+            brand: defaultBrand,
+            spec: m.spec,
+            price: Number(m.price),
+            hp: Number(m.hp),
+            stage: Number(m.stage),
+            is_premium: false,
+            is_custom: false,
+            is_primary_recommendation: normBrand === "budget" || !normBrand || (localBrandName && normBrand === localBrandName.toLowerCase().trim()) || ["jai kissan", "orient", "godavari", "local"].includes(normBrand),
+            reasoning: `Regular Mode with Local / Economy preference. Recommends affordable ${defaultBrand} ${m.spec}.`,
+          });
+          break; // One primary model per brand
         }
       }
     }
 
-    // 2. Premium Options
-    const premiumKeys = ["crompton", "aqua_texmo", "cri"];
+    // 2. Branded / Premium Motor Options (Dynamically scans all configured brands in config.motors)
+    const brandKeys = Object.keys(config.motors || {}).filter((k) => k !== "budget");
     let primaryPremiumBrand = "Crompton";
-    if (normBrand === "aqua_texmo") primaryPremiumBrand = "Aqua Texmo";
-    if (normBrand === "cri") primaryPremiumBrand = "CRI Pumps";
+    if (normBrand === "aqua_texmo" || normBrand === "aqua texmo") primaryPremiumBrand = "Aqua Texmo";
+    if (normBrand === "cri" || normBrand === "cri pumps") primaryPremiumBrand = "CRI Pumps";
 
-    for (const pk of premiumKeys) {
-      const brandCfg = CONFIG.motors[pk];
-      const brandName = brandCfg.brand;
+    for (const key of brandKeys) {
+      const brandCfg = config.motors[key];
+      if (!brandCfg || !brandCfg.models) continue;
+      const brandName = brandCfg.brand || key;
 
       for (const m of brandCfg.models) {
-        if (feet >= m.min_feet && feet < m.max_feet) {
-          if (m.phase_compatibility.includes(phase.toLowerCase())) {
-            let isPrimary = false;
-            if (isStandard) {
-              isPrimary = brandName === primaryPremiumBrand;
-            } else {
-              isPrimary = normBrand === pk || (premiumKeys.includes(normBrand) && brandName === primaryPremiumBrand);
-            }
+        const matchesPhase = !m.phase_compatibility || m.phase_compatibility.includes(phaseKey);
+        const matchesHp = targetHp !== null ? parseFloat(m.hp) === targetHp : true;
+        const matchesDepth = targetHp !== null ? true : (feet >= m.min_feet && feet < m.max_feet);
 
-            const specDisplay = m.spec_display || m.spec;
-            recommendations.push({
-              brand: brandName,
-              spec: specDisplay,
-              price: m.price,
-              hp: m.hp,
-              stage: m.stage,
-              is_premium: true,
-              is_custom: false,
-              is_primary_recommendation: isPrimary,
-              reasoning: `Premium ${brandName} ${specDisplay} recommended. Robust stages optimized for longevity at ${feet} FT.`,
-            });
-            break;
+        if (matchesPhase && matchesHp && matchesDepth) {
+          let isPrimary = false;
+          if (isStandard) {
+            isPrimary = brandName.toLowerCase() === primaryPremiumBrand.toLowerCase();
+          } else {
+            isPrimary = (normBrand && brandName.toLowerCase().includes(normBrand)) || brandName.toLowerCase() === primaryPremiumBrand.toLowerCase();
           }
+
+          const specDisplay = m.spec_display || m.spec;
+          recommendations.push({
+            brand: brandName,
+            spec: specDisplay,
+            price: Number(m.price),
+            hp: Number(m.hp),
+            stage: Number(m.stage),
+            is_premium: true,
+            is_custom: false,
+            is_primary_recommendation: isPrimary,
+            reasoning: `${brandName} ${specDisplay} (${m.hp} HP). Robust stages optimized for longevity.`,
+          });
+          break; // One model per brand
         }
       }
     }
@@ -327,23 +413,26 @@ export class QuotationCalculationService {
     if (Array.isArray(customMotors) && customMotors.length > 0) {
       for (const cm of customMotors) {
         if (cm.brand && cm.price) {
-          const isSelectedCustom = selectedMotor && selectedMotor.brand === cm.brand && selectedMotor.price === cm.price;
+          const cmHp = parseFloat(cm.hp) || 2.0;
+          if (targetHp !== null && cmHp !== targetHp) continue;
+
+          const isSelectedCustom = selectedMotor && selectedMotor.brand === cm.brand && Number(selectedMotor.price) === Number(cm.price);
           recommendations.push({
             brand: cm.brand,
-            spec: cm.spec || `${cm.hp || 2} HP / ${cm.stage || 25} Stage`,
+            spec: cm.spec || `${cmHp} HP / ${cm.stage || 25} Stage`,
             price: Number(cm.price),
-            hp: Number(cm.hp || 2.0),
+            hp: cmHp,
             stage: Number(cm.stage || 25),
             is_premium: false,
             is_custom: true,
             is_primary_recommendation: isSelectedCustom || false,
-            reasoning: `Custom Motor Configuration: ${cm.brand} specified with custom shop price.`,
+            reasoning: `Custom Motor: ${cm.brand} configured with shop rate.`,
           });
         }
       }
     }
 
-    // 4. If selectedMotor explicitly provided, ensure it becomes the primary recommendation
+    // 4. Primary Selection Assignment
     if (selectedMotor) {
       recommendations.forEach((r) => {
         const matchesBrand = r.brand.toLowerCase() === selectedMotor.brand.toLowerCase();
@@ -360,19 +449,20 @@ export class QuotationCalculationService {
   }
 
   static selectStarter(phase = "single", starterType = "manual", motorHp = 1.5) {
+    const config = this.getPricingConfig();
     if (phase.toLowerCase() === "three") {
-      const timerCfg = CONFIG.starters.three_phase.timer;
+      const timerCfg = config.starters.three_phase.timer;
       return {
         brand: timerCfg.brand,
         type: "timer",
-        price: timerCfg.price,
+        price: Number(timerCfg.price),
       };
     }
 
     // Single phase
     const isAuto = starterType.toLowerCase() === "auto" || starterType.toLowerCase() === "timer";
     const typeKey = isAuto ? "auto" : "manual";
-    const typeCfg = CONFIG.starters.single_phase[typeKey];
+    const typeCfg = config.starters.single_phase[typeKey];
 
     let brandName = typeCfg.brands[0];
     if (typeKey === "manual" && typeCfg.brands.length > 1) {
@@ -380,9 +470,10 @@ export class QuotationCalculationService {
     }
 
     let price = 2000;
+    const parsedHp = parseFloat(motorHp) || 1.5;
     for (const rate of typeCfg.rates) {
-      if (rate.hp === motorHp) {
-        price = rate.price;
+      if (rate.hp === parsedHp) {
+        price = Number(rate.price);
         break;
       }
     }
@@ -395,11 +486,12 @@ export class QuotationCalculationService {
   }
 
   static selectFittingCharges(feet) {
-    for (const r of CONFIG.fitting_charges.ranges) {
+    const config = this.getPricingConfig();
+    for (const r of config.fitting_charges.ranges) {
       if (feet >= r.min_feet && feet < r.max_feet) {
         return {
           label: r.label,
-          price: r.charge,
+          price: Number(r.charge),
           method: r.method,
         };
       }
@@ -408,7 +500,8 @@ export class QuotationCalculationService {
   }
 
   static calculateTotals(subtotal, discountOverride = null) {
-    const discountPct = discountOverride !== null ? discountOverride : CONFIG.business.default_discount_percentage;
+    const config = this.getPricingConfig();
+    const discountPct = discountOverride !== null ? discountOverride : config.business.default_discount_percentage;
     const discountAmount = Math.round(subtotal * (discountPct / 100) * 100) / 100;
     const grandTotal = Math.round((subtotal - discountAmount) * 100) / 100;
 
@@ -435,10 +528,12 @@ export class QuotationCalculationService {
     local_brand_name = null,
     custom_motors = [],
     selected_motor = null,
+    selected_hp = "auto",
     show_motor_options = true,
     compare_brands = null,
     mode = "REGULAR",
   }) {
+    const config = this.getPricingConfig();
     const depth = parseInt(feet, 10);
     const cleanPhone = String(phone || "").replace(/\D/g, "");
     const cleanMode = String(mode).toUpperCase() === "STANDARD" ? "STANDARD" : "REGULAR";
@@ -449,11 +544,12 @@ export class QuotationCalculationService {
     // 2. Cable Selection
     const cableDetail = this.selectCable(depth, cleanMode);
 
-    // 3. Motor Recommendations (with local brand and custom motors support)
+    // 3. Motor Recommendations (with local brand, HP sizing, and custom motors support)
     const motors = this.recommendMotors(depth, phase, preferred_brand, cleanMode, {
       localBrandName: local_brand_name,
       customMotors: custom_motors,
       selectedMotor: selected_motor,
+      selectedHp: selected_hp,
     });
 
     if (!motors || motors.length === 0) {
@@ -462,13 +558,13 @@ export class QuotationCalculationService {
 
     const primaryMotor = motors.find((m) => m.is_primary_recommendation) || motors[0];
 
-    // 4. Starter Panel Selection
+    // 4. Starter Panel Selection (priced automatically based on primary motor HP)
     const starterDetail = this.selectStarter(phase, starter_type, primaryMotor.hp);
 
     // 5. Accessories and Fitting Charges
     const accessoriesDetail = {
-      name: CONFIG.accessories.name,
-      price: CONFIG.accessories.price,
+      name: config.accessories.name,
+      price: Number(config.accessories.price),
     };
     const fittingDetail = this.selectFittingCharges(depth);
 
@@ -513,7 +609,7 @@ export class QuotationCalculationService {
       });
 
     // 8. Formatted Summary Metadata
-    const modeConfig = CONFIG.business.modes[cleanMode];
+    const modeConfig = config.business.modes[cleanMode] || config.business.modes.REGULAR;
     const summary = {
       mode_label: modeConfig.label,
       mode_description: modeConfig.description,
@@ -549,11 +645,15 @@ export class QuotationCalculationService {
   }
 
   /**
-   * Helper to query compatible motors for a given depth live in the form
+   * Helper to query compatible motors for a given depth & HP live in the form
    */
   static getCompatibleMotors(depth, phase = "single", mode = "REGULAR", options = {}) {
-    if (!depth || isNaN(depth) || depth <= 0) return [];
-    return this.recommendMotors(parseInt(depth, 10), phase, null, mode, options);
+    const depthNum = parseInt(depth, 10) || 0;
+    const { selectedHp = "auto" } = options;
+    if ((!depthNum || isNaN(depthNum) || depthNum <= 0) && (selectedHp === "auto" || !selectedHp)) {
+      return [];
+    }
+    return this.recommendMotors(depthNum, phase, null, mode, options);
   }
 }
 

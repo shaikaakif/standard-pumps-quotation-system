@@ -125,6 +125,20 @@ class UltraMsgService {
     }
 
     try {
+      // 1. Fetch connected WhatsApp profile (SHAIK ASIF / 919110704747)
+      let meProfile = null;
+      try {
+        const meRes = await fetch(
+          `https://api.ultramsg.com/${encodeURIComponent(instanceId)}/instance/me?token=${encodeURIComponent(token)}`
+        );
+        if (meRes.ok) {
+          meProfile = await meRes.json();
+        }
+      } catch (err) {
+        console.warn("Could not fetch instance profile:", err);
+      }
+
+      // 2. Fetch instance status
       const url = `https://api.ultramsg.com/${encodeURIComponent(instanceId)}/instance/status?token=${encodeURIComponent(token)}`;
       const response = await fetch(url, {
         method: "GET",
@@ -140,12 +154,31 @@ class UltraMsgService {
       }
 
       const data = await response.json();
-      // UltraMsg returns { status: "authenticated" } or { status: "qr" } or error
-      const isAuth = data.status === "authenticated" || data.status === "connected";
+
+      // UltraMsg returns nested: { status: { accountStatus: { status: "authenticated", substatus: "connected" } } }
+      const statusStr =
+        typeof data.status === "string"
+          ? data.status
+          : data?.status?.accountStatus?.status ||
+            data?.accountStatus?.status ||
+            "";
+
+      const substatusStr =
+        data?.status?.accountStatus?.substatus ||
+        data?.accountStatus?.substatus ||
+        "";
+
+      const isAuth =
+        statusStr === "authenticated" ||
+        substatusStr === "connected" ||
+        Boolean(meProfile?.id);
+
       return {
         success: true,
         authenticated: isAuth,
-        status: data.status || "ready",
+        status: statusStr || (isAuth ? "authenticated" : "pending"),
+        substatus: substatusStr,
+        profile: meProfile,
         data,
       };
     } catch (e) {

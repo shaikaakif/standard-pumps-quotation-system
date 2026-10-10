@@ -113,17 +113,22 @@ export default function UltraMsgGatewayForm() {
             <FaWhatsapp className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 flex-wrap">
               <span>WhatsApp Cloud Gateway (UltraMsg)</span>
               {testResult?.authenticated ? (
                 <span className="text-[11px] font-bold bg-green-100 text-green-800 border border-green-300 px-2.5 py-0.5 rounded-full inline-flex items-center space-x-1">
                   <FiCheck className="w-3 h-3 text-green-600" />
-                  <span>Online & Linked</span>
+                  <span>Online: {testResult.profile?.name || "Linked"}</span>
                 </span>
-              ) : ultraMsgService.isConfigured() ? (
+              ) : isTesting ? (
                 <span className="text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-full inline-flex items-center space-x-1">
                   <FiRefreshCw className="w-3 h-3 text-amber-600 animate-spin" />
                   <span>Checking...</span>
+                </span>
+              ) : ultraMsgService.isConfigured() ? (
+                <span className="text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300 px-2.5 py-0.5 rounded-full inline-flex items-center space-x-1">
+                  <FiAlertTriangle className="w-3 h-3 text-amber-600" />
+                  <span>Pending QR Scan</span>
                 </span>
               ) : (
                 <span className="text-[11px] font-bold bg-gray-100 text-gray-600 border border-gray-300 px-2.5 py-0.5 rounded-full">
@@ -229,7 +234,7 @@ export default function UltraMsgGatewayForm() {
             {testResult.success && testResult.authenticated ? (
               <>
                 <FiCheck className="w-4 h-4 text-green-600" />
-                <span>Connected & Ready: WhatsApp session is authenticated!</span>
+                <span>Connected & Ready: WhatsApp session is authenticated ({testResult.profile?.name || "SHAIK ASIF"} - +91 {senderPhone})!</span>
               </>
             ) : testResult.success && !testResult.authenticated ? (
               <>
@@ -246,7 +251,7 @@ export default function UltraMsgGatewayForm() {
           <p className="text-[11px] opacity-90">
             {testResult.error ||
               (testResult.authenticated
-                ? "Your app can now send PDF invoices, quotations, and loyalty cards directly to customers in 1 click."
+                ? `Ready to auto-deliver PDF invoices, quotations, and loyalty cards directly from +91 ${senderPhone} in 1 click.`
                 : "Open WhatsApp on your phone (+91 9110704747) > Linked Devices, and scan the QR code in your UltraMsg dashboard.")}
           </p>
         </div>

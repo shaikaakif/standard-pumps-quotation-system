@@ -7,6 +7,7 @@ import { FaWhatsapp, FaCrown } from "react-icons/fa";
 import toast from "react-hot-toast";
 import html2pdf from "html2pdf.js";
 import { shareService } from "../../services/shareService";
+import ultraMsgService from "../../services/ultraMsgService";
 import { useSettings } from "../../hooks/useSettings";
 
 /**
@@ -87,9 +88,48 @@ export default function CashbackModal({ invoice, isOpen, onClose }) {
     setTimeout(() => setIsCaptionCopied(false), 2500);
   };
 
-  // 3. Share directly to WhatsApp (with customer phone number pre-filled)
+  // 3. Share directly to WhatsApp (with customer phone number pre-filled or auto-sent via Cloud Bot)
   const handleShareWhatsApp = async () => {
     setIsExporting(true);
+
+    // If UltraMsg Cloud Gateway is configured, deliver directly from shop number (+91 9110704747)
+    if (ultraMsgService.isConfigured() && phone) {
+      toast.loading("Delivering VIP Pass via Cloud Bot...", { id: "cashback-share" });
+      try {
+        let blob = null;
+        if (cardRef.current) {
+          const opt = {
+            margin: [8, 8, 8, 8],
+            filename: `VIP_Cashback_Pass_${customerName.replace(/[^a-zA-Z0-9]/g, "_")}_${voucherCode}.pdf`,
+            image: { type: "jpeg", quality: 1.0 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: "mm", format: "a5", orientation: "landscape" }
+          };
+          blob = await html2pdf().set(opt).from(cardRef.current).output("blob");
+        }
+        const caption = shareService.formatCashbackShareText(cashbackPayload);
+        if (blob) {
+          await ultraMsgService.sendDocument({
+            toPhone: phone,
+            filename: `VIP_Cashback_Pass_${customerName.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
+            document: blob,
+            caption,
+          });
+        } else {
+          await ultraMsgService.sendTextMessage(phone, caption);
+        }
+        toast.dismiss("cashback-share");
+        toast.success(`✓ VIP Cashback Pass delivered from +91 9110704747 to ${customerName}!`);
+        setIsExporting(false);
+        return;
+      } catch (e) {
+        console.warn("UltraMsg send failed, falling back to app:", e);
+        toast.dismiss("cashback-share");
+        toast.error(`Cloud send failed (${e.message}). Opening WhatsApp app...`);
+      }
+    }
+
+    // Native app fallback
     toast.loading("Preparing VIP Card for WhatsApp...", { id: "cashback-share" });
 
     try {

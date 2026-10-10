@@ -395,7 +395,7 @@ export default function InvoiceForm() {
                 className="bg-brand-gray-50/70 border border-brand-gray-200 rounded-xl p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 transition-all hover:border-brand-gray-300"
               >
                 {/* Mobile Top Row: Number badge + Description Input + Delete */}
-                <div className="flex items-center gap-2 flex-1">
+                <div className="flex items-center gap-2 w-full">
                   <span className="w-6 h-6 rounded-full bg-brand-primary text-white text-[11px] font-bold flex items-center justify-center shrink-0">
                     {index + 1}
                   </span>
@@ -404,61 +404,62 @@ export default function InvoiceForm() {
                     placeholder="Item Description (e.g. 2 HP Submersible Motor)"
                     value={item.name}
                     onChange={(e) => handleItemChange(item.id, "name", e.target.value)}
-                    className="w-full text-xs sm:text-sm px-3 py-2 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-medium"
+                    className="flex-1 min-w-0 text-xs sm:text-sm px-3 py-2 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-medium"
                   />
                   <button
                     type="button"
                     onClick={() => handleRemoveItem(item.id)}
-                    className="sm:hidden p-2 text-brand-muted hover:text-brand-danger hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                    className="p-2 text-brand-muted hover:text-brand-danger hover:bg-red-50 rounded-lg transition-colors shrink-0"
                     title="Remove Item"
                   >
-                    <FiTrash2 className="w-4 h-4" />
+                    <FiTrash2 className="w-4 h-4 text-red-500" />
                   </button>
                 </div>
 
                 {/* Bottom Row on Mobile / Inline on Desktop: Qty & Price & Total */}
-                <div className="flex items-center justify-between sm:justify-end gap-2 pl-8 sm:pl-0">
-                  <div className="flex items-center space-x-1.5">
-                    <span className="text-[10px] text-brand-muted uppercase font-bold sm:hidden">Qty:</span>
+                <div className="grid grid-cols-12 gap-2 items-center bg-white p-2.5 rounded-lg border border-brand-gray-200 w-full sm:bg-transparent sm:border-0 sm:p-0 sm:flex sm:justify-end sm:gap-3">
+                  {/* Quantity */}
+                  <div className="col-span-3 sm:flex sm:items-center sm:space-x-1.5">
+                    <span className="block text-[10px] text-brand-muted uppercase font-bold mb-1 sm:mb-0 sm:text-xs">
+                      Qty:
+                    </span>
                     <input
                       type="number"
                       min="1"
-                      placeholder="Qty"
+                      inputMode="numeric"
+                      placeholder="1"
                       value={item.qty}
                       onChange={(e) => handleItemChange(item.id, "qty", e.target.value)}
-                      className="w-16 sm:w-20 text-xs sm:text-sm text-center px-2 py-2 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-mono"
+                      className="w-full sm:w-20 text-xs sm:text-sm text-center px-2 py-2 bg-brand-gray-50 sm:bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-mono font-bold"
                       title="Quantity"
                     />
                   </div>
 
-                  <div className="flex items-center space-x-1.5">
-                    <span className="text-[10px] text-brand-muted uppercase font-bold sm:hidden">Rate:</span>
+                  {/* Rate / Unit Price */}
+                  <div className="col-span-5 sm:flex sm:items-center sm:space-x-1.5">
+                    <span className="block text-[10px] text-brand-muted uppercase font-bold mb-1 sm:mb-0 sm:text-xs">
+                      Rate:
+                    </span>
                     <input
                       type="number"
                       min="0"
                       step="any"
-                      placeholder="Price (₹)"
+                      inputMode="decimal"
+                      placeholder="₹ Price"
                       value={item.price}
                       onChange={(e) => handleItemChange(item.id, "price", e.target.value)}
-                      className="w-24 sm:w-28 text-xs sm:text-sm text-right px-2 py-2 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-mono"
+                      className="w-full sm:w-28 text-xs sm:text-sm text-right px-2.5 py-2 bg-brand-gray-50 sm:bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary transition-all font-mono font-bold"
                       title="Unit Price in ₹"
                     />
                   </div>
 
-                  {/* Calculated row total */}
-                  <div className="w-24 sm:w-28 text-right font-mono font-bold text-xs text-brand-primary px-1">
+                  {/* Calculated Row Total */}
+                  <div className="col-span-4 sm:w-28 text-right font-mono font-bold text-xs sm:text-sm text-brand-primary px-1 truncate">
+                    <span className="block text-[9px] text-brand-muted uppercase font-bold sm:hidden mb-0.5">
+                      Subtotal
+                    </span>
                     ₹{rowTotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
-
-                  {/* Delete Button (Desktop) */}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveItem(item.id)}
-                    className="hidden sm:block p-2 text-brand-muted hover:text-brand-danger hover:bg-red-50 rounded-lg transition-colors shrink-0"
-                    title="Remove Item"
-                  >
-                    <FiTrash2 className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
             );
@@ -514,10 +515,12 @@ export default function InvoiceForm() {
               <input
                 type="number"
                 min="0"
+                step="any"
+                inputMode="decimal"
                 placeholder="0.00"
                 value={discount}
                 onChange={(e) => setDiscount(e.target.value)}
-                className="w-full text-right text-xs px-2 py-1 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary font-mono"
+                className="w-full text-right text-xs sm:text-sm px-2.5 py-1.5 bg-white border border-brand-gray-300 rounded-lg outline-none focus:border-brand-primary font-mono font-semibold"
               />
             </div>
           </div>

@@ -9,6 +9,7 @@ import DefaultsForm from '../components/settings/DefaultsForm';
 import SystemInfoCard from '../components/settings/SystemInfoCard';
 import DataManagement from '../components/settings/DataManagement';
 import SupabaseSyncForm from '../components/settings/SupabaseSyncForm';
+import UltraMsgGatewayForm from '../components/settings/UltraMsgGatewayForm';
 
 const Settings = () => {
   const { 
@@ -75,6 +76,10 @@ const Settings = () => {
 
         <section>
           <DataManagement settings={settings} />
+        </section>
+
+        <section>
+          <UltraMsgGatewayForm />
         </section>
 
         <section>

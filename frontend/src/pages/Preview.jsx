@@ -20,6 +20,7 @@ import LoadingOverlay from "../components/system/LoadingOverlay";
 import WatermarkBackground from "../components/quotation/WatermarkBackground";
 import InvoiceDocument from "../components/invoice/InvoiceDocument";
 import CashbackModal from "../components/cashback/CashbackModal";
+import WhatsAppSendModal from "../components/whatsapp/WhatsAppSendModal";
 import { FiAlertCircle, FiArrowLeft, FiGift, FiX } from "react-icons/fi";
 import { FaCrown } from "react-icons/fa";
 
@@ -39,6 +40,7 @@ function Preview() {
   
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isCashbackModalOpen, setIsCashbackModalOpen] = useState(false);
+  const [isWhatsappModalOpen, setIsWhatsappModalOpen] = useState(false);
   const [isVipBannerDismissed, setIsVipBannerDismissed] = useState(false);
   const pdfLoader = useLoadingSteps("pdf", 2500);
 
@@ -137,7 +139,7 @@ function Preview() {
     }
   };
 
-  const handleShareWhatsapp = async () => {
+  const handleNativeShareWhatsapp = async () => {
     if (!hasActiveDocument) return;
     toast.loading("Preparing PDF attachment...", { id: "share-loader" });
     const pdfFile = await generateAttachmentFile();
@@ -148,6 +150,11 @@ function Preview() {
     } else {
       await shareService.shareQuotation(quotationResponse, { mode: "whatsapp", pdfFile });
     }
+  };
+
+  const handleShareWhatsapp = () => {
+    if (!hasActiveDocument) return;
+    setIsWhatsappModalOpen(true);
   };
 
   const handleShare = async () => {
@@ -307,6 +314,26 @@ function Preview() {
           onClose={() => setIsCashbackModalOpen(false)}
         />
       )}
+
+      {/* 5. WhatsApp Cloud Send & Share Modal */}
+      <WhatsAppSendModal
+        isOpen={isWhatsappModalOpen}
+        onClose={() => setIsWhatsappModalOpen(false)}
+        customerName={isInvoice ? invoiceData?.customer_name : quotationResponse?.customer_name}
+        phone={isInvoice ? invoiceData?.phone : quotationResponse?.phone}
+        documentType={isInvoice ? "Invoice" : "Quotation"}
+        documentFilename={getDocFilename()}
+        getPdfBlob={async () => {
+          const file = await generateAttachmentFile();
+          return file;
+        }}
+        captionText={
+          isInvoice
+            ? shareService.formatInvoiceAttachmentText(invoiceData)
+            : shareService.formatAttachmentText(quotationResponse)
+        }
+        onOpenNativeWhatsApp={handleNativeShareWhatsapp}
+      />
 
       {isGeneratingPdf && (
         <LoadingOverlay 

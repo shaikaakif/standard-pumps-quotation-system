@@ -38,9 +38,12 @@ export const shareService = {
    */
   formatAttachmentText(quotation) {
     const shop = getShopConfig();
-    const cust = quotation?.customer_name ? ` for ${quotation.customer_name}` : "";
+    const cust = quotation?.customer_name ? ` for *${quotation.customer_name}*` : "";
+    const feetStr = quotation?.feet ? ` (${quotation.feet} Feet)` : "";
+    const totalStr = quotation?.summary?.formatted_grand_total || (quotation?.totals?.grand_total ? `₹${Number(quotation.totals.grand_total).toLocaleString("en-IN")}` : "");
+    const totalLine = totalStr ? `\n💰 *Total Estimate: ${totalStr}*` : "";
     const phoneStr = shop.secondary_phone ? `${shop.phone} / ${shop.secondary_phone}` : shop.phone;
-    return `Assalamu Alaikum / Greetings.\n\nPlease find your quotation${cust} from ${shop.shop_name} attached.\n\nFor any assistance please contact us.\n\n*${shop.shop_name}*\n📞 ${phoneStr}\n📍 ${shop.address}`;
+    return `Assalamu Alaikum / Greetings.\n\nPlease find your Borewell Quotation${cust}${feetStr} from *${shop.shop_name}* attached in the PDF document above.${totalLine}\n\nFor any query or assistance, please contact us:\n📞 ${phoneStr}\n📍 ${shop.address}`;
   },
 
   /**
@@ -110,9 +113,12 @@ _Thank you for your business!_
    */
   formatInvoiceAttachmentText(invoice) {
     const shop = getShopConfig();
-    const invNo = invoice?.invoice_number || "Invoice";
+    const invNo = invoice?.invoice_number ? `#${invoice.invoice_number}` : "Invoice";
+    const cust = invoice?.customer_name ? ` for *${invoice.customer_name}*` : "";
+    const totalStr = invoice?.grand_total ? `₹${Number(invoice.grand_total).toLocaleString("en-IN")}` : "";
+    const totalLine = totalStr ? `\n💰 *Bill Amount: ${totalStr}*` : "";
     const phoneStr = shop.secondary_phone ? `${shop.phone} / ${shop.secondary_phone}` : shop.phone;
-    return `Assalamu Alaikum / Greetings.\n\nPlease find your Bill/Invoice (${invNo}) from ${shop.shop_name} attached.\n\nFor any query or assistance, please contact us.\n\n*${shop.shop_name}*\n📞 ${phoneStr}\n📍 ${shop.address}`;
+    return `Assalamu Alaikum / Greetings.\n\nPlease find your Bill/Invoice (${invNo})${cust} from *${shop.shop_name}* attached in the PDF document above.${totalLine}\n\nFor any query or assistance, please contact us:\n📞 ${phoneStr}\n📍 ${shop.address}`;
   },
 
   /**
@@ -288,42 +294,85 @@ _Thank you for choosing ${shop.shop_name}!_
 
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
       navigator.userAgent
-    );
+    ) || (typeof navigator !== "undefined" && navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
     const cleanPhone = this.cleanPhoneNumber(phone);
     const phoneParam = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
 
-    // 1. Mobile Native Web Share API (with or without File)
-    if (isMobile && mode === "all" && navigator.share) {
+    // Pre-copy caption text to clipboard as an instant 100% reliable backup
+    this.copyToClipboard(textToShare, false);
+
+    // 1. Mobile Native Web Share API with PDF File Attachment
+    // On Mobile (Android / iOS / Safari), navigator.share({ files: [pdfFile] }) is the standard
+    // way to attach a document directly into WhatsApp. WhatsApp opens with the PDF attached & caption prefilled!
+    if (isMobile && pdfFile && typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      let canShareWithFile = false;
       try {
-        const shareData = {
-          title,
-          text: textToShare,
-        };
-
-        if (pdfFile && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-          shareData.files = [pdfFile];
+        if (typeof navigator.canShare === "function") {
+          canShareWithFile = navigator.canShare({ files: [pdfFile] });
         }
+      } catch (e) {
+        console.warn("navigator.canShare check failed:", e);
+      }
 
-        await navigator.share(shareData);
-        toast.success(successMsg || "Shared successfully!");
-        return;
-      } catch (err) {
-        if (err.name === "AbortError") {
-          return; // User cancelled the share sheet
+      if (canShareWithFile) {
+        try {
+          const sharePayload = {
+            title: title || "Quotation",
+            text: textToShare,
+            files: [pdfFile],
+          };
+
+          let canShareFull = false;
+          try {
+            canShareFull = navigator.canShare(sharePayload);
+          } catch (e) {
+            canShareFull = false;
+          }
+
+          if (canShareFull) {
+            await navigator.share(sharePayload);
+          } else {
+            // Some iOS/Android versions only support files without text in the share dictionary
+            await navigator.share({
+              title: title || "Quotation",
+              files: [pdfFile],
+            });
+          }
+
+          toast.success(successMsg || "Shared with PDF attachment!");
+          return;
+        } catch (err) {
+          if (err.name === "AbortError") {
+            // User dismissed the OS share sheet - cleanly exit
+            return;
+          }
+          console.warn("Native file share aborted/failed, falling back to direct WhatsApp link:", err);
         }
-        console.warn("Native Web Share failed, falling back to WhatsApp:", err);
       }
     }
 
-    // 2. WhatsApp Direct Sharing (Explicit click or Mobile native fallback)
+    // 2. Mobile Native Web Share API without File (Generic mode="all")
+    if (isMobile && mode === "all" && typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({
+          title: title || "Quotation",
+          text: textToShare,
+        });
+        toast.success(successMsg || "Shared successfully!");
+        return;
+      } catch (err) {
+        if (err.name === "AbortError") return;
+        console.warn("Native text share failed, falling back:", err);
+      }
+    }
+
+    // 3. WhatsApp Direct Deep-Link (Desktop PC or Mobile fallback)
+    // On Desktop: automatically downloads the PDF and opens WhatsApp Web/Desktop with customer chat & prefilled message.
     if (mode === "whatsapp" || isMobile) {
       const encodedText = encodeURIComponent(textToShare);
-      
-      // Auto-copy the caption to clipboard so the user has it ready regardless
-      this.copyToClipboard(textToShare, false);
 
-      // If we have a PDF, trigger a forced physical download so it's in the device's "Recent Downloads".
+      // Auto-download PDF so user has it directly in their downloads folder
       if (pdfFile) {
         try {
           const url = URL.createObjectURL(pdfFile);
@@ -335,23 +384,19 @@ _Thank you for choosing ${shop.shop_name}!_
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
           
-          toast("PDF downloaded. Tap 📎 in WhatsApp to attach it.", { duration: 6000, icon: "📎" });
+          toast("📄 PDF downloaded! In WhatsApp, click 📎 to attach it.", { duration: 6000, icon: "📎" });
         } catch (downloadErr) {
           console.warn("Failed to auto-download PDF fallback:", downloadErr);
         }
       }
 
       // Universal WhatsApp Deep-Link:
-      // On Windows/Mac Desktop, api.whatsapp.com prompts "Open WhatsApp?" app dialog if installed,
-      // and opens directly to the customer's phone number!
       let whatsappUrl = "";
       if (phoneParam) {
-        // Direct link to customer's chat with prefilled text
         whatsappUrl = isMobile
           ? `whatsapp://send?phone=${phoneParam}&text=${encodedText}`
           : `https://api.whatsapp.com/send?phone=${phoneParam}&text=${encodedText}`;
       } else {
-        // Fallback without phone number
         whatsappUrl = isMobile
           ? `whatsapp://send?text=${encodedText}`
           : `https://api.whatsapp.com/send?text=${encodedText}`;
@@ -366,7 +411,7 @@ _Thank you for choosing ${shop.shop_name}!_
       return;
     }
 
-    // 3. Fallback: Copy to Clipboard
+    // 4. Final Fallback: Copy to Clipboard
     this.copyToClipboard(textToShare, true);
   },
 

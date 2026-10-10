@@ -162,30 +162,93 @@ export default function WhatsAppSendModal({
 
         {/* Action Choices */}
         <div className="p-4 sm:p-5 space-y-3">
-          {/* OPTION 1: CLOUD BOT AUTOMATION (HERO) */}
-          <div className={`p-4 rounded-xl border transition-all ${
-            isConfigured 
-              ? "bg-gradient-to-r from-emerald-50 to-green-50/50 border-emerald-300 shadow-xs" 
-              : "bg-gray-50 border-gray-200 opacity-90"
-          }`}>
+          {/* OPTION 1: 1-TAP FREE WHATSAPP SHARE (HERO) */}
+          <div className="p-4 rounded-xl border border-emerald-300 bg-gradient-to-r from-emerald-50 to-green-50/50 shadow-xs">
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="flex items-center space-x-2">
                 <span className="p-1.5 bg-emerald-600 text-white rounded-lg shadow-2xs">
-                  <FiZap className="w-4 h-4" />
+                  <FaWhatsapp className="w-4 h-4" />
                 </span>
                 <div>
                   <h4 className="text-xs sm:text-sm font-black text-brand-navy-950">
-                    ⚡ Auto-Send via Cloud Bot
+                    📱 1-Tap Free WhatsApp Share
+                  </h4>
+                  <span className="text-[10px] text-emerald-800 font-bold block">
+                    ✓ 100% Free Forever • PDF Attached Directly
+                  </span>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300 shrink-0">
+                Recommended
+              </span>
+            </div>
+
+            <p className="text-[11px] text-brand-navy-800 mb-3 leading-relaxed">
+              Attaches the complete PDF document and fills in the formatted quotation caption. Opens WhatsApp directly with customer's chat.
+            </p>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleOpenApp}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-95 flex items-center justify-center space-x-2"
+              >
+                <FaWhatsapp className="w-4 h-4" />
+                <span>Share with PDF Attachment</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleCopyCaption}
+                className="py-2.5 px-3 rounded-xl bg-white hover:bg-brand-gray-50 text-brand-navy-800 text-xs font-bold transition-all border border-brand-gray-300 flex items-center justify-center space-x-1 shadow-2xs active:scale-95"
+                title="Copy caption text to clipboard"
+              >
+                {isCopied ? (
+                  <>
+                    <FiCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="text-emerald-700 text-[11px]">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <FiCopy className="w-3.5 h-3.5 text-brand-secondary" />
+                    <span className="text-[11px]">Copy Text</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center space-x-2 my-2 text-brand-muted text-[10px] uppercase font-bold tracking-widest justify-center">
+            <span className="h-px bg-brand-gray-200 flex-1" />
+            <span>Optional Cloud Bot</span>
+            <span className="h-px bg-brand-gray-200 flex-1" />
+          </div>
+
+          {/* OPTION 2: CLOUD BOT AUTOMATION (PAID SUBSCRIPTION) */}
+          <div className={`p-3.5 rounded-xl border transition-all ${
+            isConfigured 
+              ? "bg-gray-50 border-gray-300" 
+              : "bg-gray-50/60 border-gray-200 opacity-80"
+          }`}>
+            <div className="flex items-start justify-between gap-2 mb-1.5">
+              <div className="flex items-center space-x-2">
+                <span className="p-1 bg-gray-600 text-white rounded-md shadow-2xs">
+                  <FiZap className="w-3.5 h-3.5" />
+                </span>
+                <div>
+                  <h4 className="text-xs font-bold text-brand-navy-950">
+                    ⚡ Background Cloud Bot (UltraMsg)
                   </h4>
                   <span className="text-[10px] text-brand-muted font-medium block">
-                    Direct from shop number: <strong>+91 9110704747</strong>
+                    Requires paid UltraMsg API instance ($39/mo)
                   </span>
                 </div>
               </div>
 
               {isConfigured ? (
-                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300">
-                  Ready
+                <span className="text-[9px] font-bold bg-green-100 text-green-800 px-2 py-0.5 rounded-full border border-green-200">
+                  Configured
                 </span>
               ) : (
                 <button
@@ -194,64 +257,22 @@ export default function WhatsAppSendModal({
                     onClose();
                     navigate("/settings");
                   }}
-                  className="text-[10px] font-bold text-brand-primary bg-white hover:bg-brand-gray-100 px-2 py-1 rounded border border-brand-gray-300 inline-flex items-center gap-1 transition-colors"
+                  className="text-[10px] font-bold text-brand-primary bg-white hover:bg-brand-gray-100 px-2 py-0.5 rounded border border-brand-gray-300 inline-flex items-center gap-1 transition-colors"
                 >
                   <FiSettings className="w-3 h-3" />
-                  <span>Configure</span>
+                  <span>Setup</span>
                 </button>
               )}
             </div>
-
-            <p className="text-[11px] text-brand-navy-800 mb-3 leading-relaxed">
-              Delivers the PDF attachment and formatted caption instantly in the background. You never have to search contacts or attach files manually!
-            </p>
 
             <button
               type="button"
               onClick={handleCloudSend}
               disabled={isSendingCloud || !isConfigured}
-              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center space-x-2"
+              className="w-full mt-2 py-2 px-3 rounded-lg bg-brand-navy-800 hover:bg-brand-navy-900 text-white text-[11px] font-bold transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center space-x-1.5"
             >
-              <FiSend className={`w-3.5 h-3.5 ${isSendingCloud ? "animate-pulse" : ""}`} />
-              <span>{isSendingCloud ? (cloudSendProgress || "Sending...") : "Deliver to Customer Now"}</span>
-            </button>
-          </div>
-
-          {/* Divider */}
-          <div className="flex items-center space-x-2 my-2 text-brand-muted text-[10px] uppercase font-bold tracking-widest justify-center">
-            <span className="h-px bg-brand-gray-200 flex-1" />
-            <span>Or Use Personal App</span>
-            <span className="h-px bg-brand-gray-200 flex-1" />
-          </div>
-
-          {/* OPTION 2: OPEN NATIVE WHATSAPP APP */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleOpenApp}
-              className="flex-1 py-2.5 px-3 rounded-xl bg-brand-gray-100 hover:bg-brand-gray-200 text-brand-navy-900 text-xs font-bold transition-all flex items-center justify-center space-x-1.5 active:scale-95 border border-brand-gray-200"
-            >
-              <FaWhatsapp className="w-4 h-4 text-green-600" />
-              <span>Open WhatsApp App</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleCopyCaption}
-              className="py-2.5 px-3 rounded-xl bg-white hover:bg-brand-gray-50 text-brand-navy-800 text-xs font-bold transition-all border border-brand-gray-300 flex items-center justify-center space-x-1 shadow-2xs active:scale-95"
-              title="Copy caption text to clipboard"
-            >
-              {isCopied ? (
-                <>
-                  <FiCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="text-emerald-700 text-[11px]">Copied!</span>
-                </>
-              ) : (
-                <>
-                  <FiCopy className="w-3.5 h-3.5 text-brand-secondary" />
-                  <span className="text-[11px]">Copy Text</span>
-                </>
-              )}
+              <FiSend className={`w-3 h-3 ${isSendingCloud ? "animate-pulse" : ""}`} />
+              <span>{isSendingCloud ? (cloudSendProgress || "Sending...") : "Send via Cloud Gateway"}</span>
             </button>
           </div>
         </div>

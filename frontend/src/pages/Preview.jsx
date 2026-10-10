@@ -153,9 +153,9 @@ function Preview() {
     }
   };
 
-  const handleShareWhatsapp = () => {
+  const handleShareWhatsapp = async () => {
     if (!hasActiveDocument) return;
-    setIsWhatsappModalOpen(true);
+    await handleNativeShareWhatsapp();
   };
 
   const handleShare = async () => {
